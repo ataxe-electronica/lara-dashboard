@@ -270,7 +270,7 @@ select option{background:var(--white)}
 <div id="tab-lotes" class="section">
   <div class="sec-label">Todos los lotes</div>
   <div class="tbl-wrap"><div style="overflow-x:auto"><table>
-    <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Compra</th><th>Venta</th><th>Cobrado</th><th>Por cobrar</th><th>Ganancia</th><th>Make-up</th><th>Distribución</th><th>Estado</th><th>Observación</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Compra</th><th>Venta</th><th>Cobrado</th><th>Por cobrar</th><th>Ganancia</th><th>Make-up</th><th>Distribución</th><th>Estado</th><th>Observación</th></tr></thead>
     <tbody id="lotes-tbl"></tbody>
   </table></div></div>
   <div id="lotes-transferencias" style="margin-top:8px"></div>
@@ -838,9 +838,14 @@ function renderLotesTbl(){
         <div style="color:var(--green)">Ataxe: ${fU(ganAtaxe(l))}</div>
         <div style="color:var(--ink3);font-size:10px">${getPctLara(l)}% / ${100-getPctLara(l)}%</div>
       </td>
-      <td>${estadoBadge(l)}${trTags?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+trTags+'</span>':''}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          ${estadoBadge(l)}
+          <button onclick="abrirModal(${l.id})" style="padding:3px 10px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap">✎</button>
+        </div>
+        ${trTags?'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+trTags+'</div>':''}
+      </td>
       <td class="obs-cell" title="${l.obs}">${l.obs||'—'}</td>
-      <td><button onclick="abrirModal(${l.id})" style="padding:4px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap">✎ editar</button></td>
     </tr>`;
   }).join('');
   // Mostrar transferencias registradas en lotes
