@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard LARA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#F7F6F2;--white:#FFFFFF;--ink:#0D0D0D;--ink2:#444440;--ink3:#888882;--ink4:#CCCCC5;
+  --border:#E2E0D8;--border2:#CCCCC5;
+  --green:#1A7A4A;--green-bg:#EAF5EF;--green-light:#D0EDDC;--green-mid:#2ecc8a;
+  --red:#C0392B;--red-bg:#FDF0EE;--red-light:#FADBD8;
+  --amber:#B45309;--amber-bg:#FEF9EE;--amber-light:#FDE68A;
+  --blue:#1A4A8A;--blue-bg:#EEF3FC;
+  --purple:#4A3FA8;--purple-bg:#F0EFFE;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+  --r:8px;--r2:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;min-height:100vh}
+/* Header */
+.header{background:var(--ink);color:#fff;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;flex-shrink:0}
+.brand{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.brand-sub{font-size:10px;color:#666;font-family:var(--mono);margin-top:1px}
+.header-right{font-family:var(--mono);font-size:11px;color:#666;text-align:right}
+.header-right strong{color:#ccc;display:block;font-size:12px;margin-bottom:1px}
+/* Nav */
+.nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:0;overflow-x:auto}
+.nav-tab{padding:13px 18px;font-size:13px;font-weight:500;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
+.nav-tab:hover{color:var(--ink)}.nav-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+/* Layout */
+.content{padding:28px 32px;max-width:1440px}
+.section{display:none}.section.active{display:block}
+/* Hero */
+.hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:28px}
+.hero-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px}
+.hero-card.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.hero-card.dark .hc-label{color:#777}
+.hc-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px}
+.hc-value{font-size:26px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.hc-sub{font-size:11px;color:var(--ink3);margin-top:5px;font-family:var(--mono)}
+.hc-green{color:var(--green)}.hc-red{color:var(--red)}.hc-amber{color:var(--amber)}.hc-purple{color:var(--purple)}
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+/* Cards */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sec-label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px}
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border);background:var(--white);margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg);white-space:nowrap;font-weight:400}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F9F8F5}
+.num{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+.ng{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:500}
+.nr{font-family:var(--mono);font-size:12px;color:var(--red);font-weight:500}
+.na{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:500}
+.np{font-family:var(--mono);font-size:12px;color:var(--purple)}
+/* Badges */
+.badge{display:inline-flex;align-items:center;font-size:10px;padding:3px 8px;border-radius:4px;font-family:var(--mono);font-weight:500;white-space:nowrap}
+.b-ok{background:var(--green-light);color:var(--green)}
+.b-warn{background:var(--amber-light);color:var(--amber)}
+.b-danger{background:var(--red-light);color:var(--red)}
+.b-info{background:var(--blue-bg);color:var(--blue)}
+.b-purple{background:var(--purple-bg);color:var(--purple)}
+.b-gray{background:var(--border);color:var(--ink2)}
+/* Progress */
+.pb{height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:50px}
+.pf{height:5px;border-radius:3px;transition:width .3s}
+.pf-g{background:var(--green)}.pf-a{background:var(--amber)}.pf-r{background:var(--red)}.pf-p{background:var(--purple)}
+/* Alerts */
+.alert{border-radius:var(--r);padding:10px 14px;font-size:12px;display:flex;gap:10px;margin-bottom:8px;line-height:1.5;font-family:var(--mono)}
+.al-ok{background:var(--green-bg);color:var(--green);border:1px solid var(--green-light)}
+.al-warn{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-light)}
+.al-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-light)}
+.al-info{background:var(--blue-bg);color:var(--blue);border:1px solid #C5D8F5}
+/* Forms */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+label{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3)}
+input,select,textarea{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus{border-color:var(--ink)}
+select option{background:var(--white)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:13px;font-family:var(--font);font-weight:500;transition:all .15s}
+.btn:hover{background:var(--border);color:var(--ink)}
+.btn-dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-dark:hover{background:#333;color:#fff}
+.btn-green{background:var(--green-bg);color:var(--green);border-color:var(--green-light)}
+.btn-green:hover{background:var(--green-light)}
+/* Flow row */
+.flow-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;flex-wrap:wrap;font-size:12px;font-family:var(--mono)}
+/* Cliente cards */
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.cl-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
+/* Por cobrar row */
+.pc-row{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+/* Stat mini */
+.stat-mini{background:var(--bg);border-radius:var(--r);padding:8px 10px}
+.sm-label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:3px}
+.sm-value{font-family:var(--mono);font-size:14px;font-weight:500}
+/* Transfer preview */
+.tr-preview{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:12px 16px;margin:10px 0;font-family:var(--mono);font-size:12px}
+.tr-arrow{display:flex;align-items:center;gap:10px;font-size:13px;margin:8px 0;flex-wrap:wrap}
+/* Obs */
+.obs-cell{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--ink3)}
+.caja-input{background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:15px;font-weight:600;padding:9px 11px;font-family:var(--mono);outline:none;width:100%;transition:border-color .15s}
+.caja-input:focus{border-color:var(--ink)}
+.cuadre-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cuadre-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="brand">Dashboard · LARA</div>
+    <div class="brand-sub">Trazabilidad de capital · Sistema interactivo · <span id="save-indicator" style="color:#2ecc8a">● Guardado</span></div>
+  </div>
+  <div class="header-right">
+    <strong id="h-fecha"></strong>
+    <span id="h-lotes">26 lotes</span>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="showTab('tacometro',this)">◎ Objetivo</div>
+  <div class="nav-tab" onclick="showTab('resumen',this)">Resumen ejecutivo</div>
+  <div class="nav-tab" onclick="showTab('lotes',this)">Lotes</div>
+  <div class="nav-tab" onclick="showTab('clientes',this)">Clientes</div>
+  <div class="nav-tab" onclick="showTab('porcobrar',this)">Por cobrar</div>
+  <div class="nav-tab" onclick="showTab('transferir',this)">Transferir capital</div>
+  <div class="nav-tab" onclick="showTab('flujo',this)">Flujo</div>
+  <div class="nav-tab" onclick="showTab('nuevo',this)">+ Nuevo lote</div>
+  <div class="nav-tab" onclick="showTab('cobrar',this)">◉ Registrar cobro</div>
+  <div class="nav-tab" onclick="showTab('gastos',this)">$ Gastos financieros</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
+    <button onclick="exportarDatos()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Exportar datos a JSON">↓ Exportar</button>
+    <label style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap;margin:0" title="Importar datos desde JSON">↑ Importar<input type="file" id="import-file" accept=".json" style="display:none" onchange="importarDatos(this)"/></label>
+    <button onclick="clearState()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink3);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Resetear al estado original">⟳ Reset</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- GASTOS FINANCIEROS -->
+<div id="tab-gastos" class="section">
+  <div id="gastos-content"></div>
+</div>
+
+<!-- TACÓMETRO -->
+<div id="tab-tacometro" class="section active">
+  <div style="max-width:640px;margin:0 auto;padding:20px 0">
+
+    <!-- Nombre e intro -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:8px">Inversión · Dashboard de LARA</div>
+      <div style="font-size:28px;font-weight:800;letter-spacing:-.02em">¿Cómo vamos?</div>
+    </div>
+
+    <!-- Tacómetro SVG -->
+    <div style="text-align:center;margin-bottom:28px">
+      <svg id="taco-svg" viewBox="0 0 320 180" style="width:100%;max-width:380px">
+        <!-- Fondo arco -->
+        <path d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke="#E2E0D8" stroke-width="22" stroke-linecap="round"/>
+        <!-- Arco de progreso -->
+        <path id="taco-arc" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke="#1A7A4A" stroke-width="22" stroke-linecap="round"
+          stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1s ease,stroke .5s"/>
+        <!-- Texto porcentaje -->
+        <text id="taco-pct" x="160" y="140" text-anchor="middle" font-size="52" font-weight="800" font-family="DM Mono,monospace" fill="#0D0D0D">0%</text>
+        <text id="taco-label" x="160" y="168" text-anchor="middle" font-size="13" font-family="Syne,sans-serif" fill="#888882">calculando...</text>
+      </svg>
+    </div>
+
+    <!-- Tres números clave -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px">
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px">En caja</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--green)" id="taco-caja">u$0</div>
+        <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);margin-top:3px" id="taco-caja-label">disponible ahora</div>
+      </div>
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px">Falta en caja</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:var(--red)" id="taco-pc">u$0</div>
+        <div style="font-size:10px;color:var(--ink3);font-family:var(--mono);margin-top:3px" id="taco-pc-label">para el objetivo</div>
+      </div>
+      <div style="background:var(--ink);border-radius:var(--r2);padding:16px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#777;margin-bottom:6px">Objetivo</div>
+        <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:#fff" id="taco-obj">u$0</div>
+        <div style="font-size:10px;color:#666;font-family:var(--mono);margin-top:3px">capital + ganancia</div>
+      </div>
+    </div>
+
+    <!-- Barra de desglose -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;margin-bottom:16px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:12px">Desglose del objetivo</div>
+      <div id="taco-desglose"></div>
+    </div>
+
+    <!-- Frase estado -->
+    <div id="taco-frase" style="text-align:center;font-size:13px;color:var(--ink3);font-family:var(--mono);padding:8px"></div>
+
+  </div>
+</div>
+
+<!-- RESUMEN -->
+<div id="tab-resumen" class="section">
+  <div class="hero-grid" id="hero"></div>
+
+  <!-- CAJA + CUADRE -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px 24px;margin-bottom:28px">
+    <div style="margin-bottom:18px">
+      <div style="font-size:15px;font-weight:700">Liquidez / Caja</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">Ingresa el efectivo y saldos disponibles para cuadrar todo</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Caja (efectivo)</label><input id="caja-efectivo" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Santander</label><input id="caja-santander" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Galicia</label><input id="caja-galicia" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">MercadoPago</label><input id="caja-mp" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Frances BBVA</label><input id="caja-frances" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">USDT / Crypto</label><input id="caja-usdt" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Otro</label><input id="caja-otro" type="number" placeholder="0" step="0.01" oninput="renderCuadre();renderTacometro();if(ONLINE_MODE){var cuenta=this.id.replace('caja-','');saveToSupabase('caja',{cuenta:cuenta,monto:parseFloat(this.value)||0});}" class="caja-input"/></div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:18px">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px">Cuadre general</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:16px" id="cuadre-grid"></div>
+      <div id="cuadre-resultado"></div>
+    </div>
+
+    <!-- MACHETE: EN TRÁNSITO -->
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700">En tránsito / Machete</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:1px">Plata cobrada al cliente pero no disponible aún — financiera, cuenta de tercero, en conversión, etc.</div>
+        </div>
+        <button onclick="agregarTransito()" style="padding:6px 14px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:12px;font-family:var(--mono)">+ Agregar ítem</button>
+      </div>
+      <div id="transito-lista"></div>
+      <div id="transito-total" style="display:none;margin-top:10px;padding:10px 16px;background:var(--amber-bg);border:1px solid var(--amber-light);border-radius:var(--r);display:flex;justify-content:space-between;align-items:center">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em">Total en tránsito</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--amber)" id="transito-total-val">u$0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="sec-label">Estado de recupero por lote</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>#</th><th>Producto / Cliente</th><th>Compra</th><th>Ganancia</th><th>Recupero</th><th>Estado</th></tr></thead>
+        <tbody id="res-tbl"></tbody>
+      </table></div>
+    </div>
+    <div>
+      <div class="sec-label">Alertas</div>
+      <div id="res-alertas"></div>
+      <div class="sec-label" style="margin-top:20px">Por cobrar por cliente</div>
+      <div id="res-pc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOTES -->
+<div id="tab-lotes" class="section">
+  <div class="sec-label">Todos los lotes</div>
+  <div class="tbl-wrap"><div style="overflow-x:auto"><table>
+    <thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Compra</th><th>Venta</th><th>Cobrado</th><th>Por cobrar</th><th>Ganancia</th><th>Make-up</th><th>Distribución</th><th>Estado</th><th>Observación</th><th></th></tr></thead>
+    <tbody id="lotes-tbl"></tbody>
+  </table></div></div>
+  <div id="lotes-transferencias" style="margin-top:8px"></div>
+</div>
+
+<!-- CLIENTES -->
+<div id="tab-clientes" class="section">
+  <div class="sec-label">Resumen por cliente</div>
+  <div class="cl-grid" id="cl-grid"></div>
+</div>
+
+<!-- POR COBRAR -->
+<div id="tab-porcobrar" class="section">
+  <div style="margin-bottom:20px" id="pc-hero"></div>
+  <div id="pc-lista"></div>
+</div>
+
+<!-- TRANSFERIR -->
+<div id="tab-transferir" class="section">
+  <div class="card">
+    <div class="card-title">Transferir capital entre lotes</div>
+    <p style="font-size:12px;color:var(--ink3);margin-bottom:16px;font-family:var(--mono)">Cuando reinvertís plata cobrada de un lote para financiar otro.</p>
+    <div class="form-grid">
+      <div class="fg"><label>Lote origen (de dónde sale)</label>
+        <select id="tr-origen" onchange="actualizarDisp()"></select>
+      </div>
+    </div>
+    <div id="tr-disp-wrap" style="display:none;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+        <div class="stat-mini"><div class="sm-label">Capital disponible</div><div class="sm-value hc-green" id="tr-disp-monto">u$0</div></div>
+        <div class="stat-mini"><div class="sm-label">Total cobrado</div><div class="sm-value" id="tr-disp-cob">u$0</div></div>
+        <div class="stat-mini"><div class="sm-label">Ya transferido</div><div class="sm-value" id="tr-disp-dado">u$0</div></div>
+        <div class="stat-mini"><div class="sm-label">Recupero</div><div class="sm-value np" id="tr-disp-pct">0%</div></div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Lote destino (adónde va)</label>
+        <select id="tr-destino"></select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Monto (USD)</label><input id="tr-monto" type="number" placeholder="0.00" step="0.01" oninput="validarTr()"/></div>
+      <div class="fg"><label>Fecha</label><input id="tr-fecha" type="date"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Nota</label><input id="tr-nota" placeholder="Ej: capital del lote 8 para financiar lote 22"/></div>
+    </div>
+    <div id="tr-val" style="display:none" class="alert al-warn">⚠ <span id="tr-val-msg"></span></div>
+    <div id="tr-prev" style="display:none" class="tr-preview">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:6px">Vista previa de la transferencia</div>
+      <div class="tr-arrow">
+        <span style="background:var(--blue-bg);color:var(--blue);padding:3px 10px;border-radius:4px" id="tr-prev-desde">—</span>
+        <span style="color:var(--ink3)">──▶</span>
+        <span style="font-size:15px;font-weight:700;color:var(--purple)" id="tr-prev-monto">u$0</span>
+        <span style="color:var(--ink3)">──▶</span>
+        <span style="background:var(--amber-bg);color:var(--amber);padding:3px 10px;border-radius:4px" id="tr-prev-hacia">—</span>
+      </div>
+      <div style="color:var(--ink3);font-size:11px" id="tr-prev-saldo"></div>
+    </div>
+    <button class="btn btn-dark" onclick="ejecutarTr()">⇄ Registrar transferencia</button>
+  </div>
+  <div id="tr-conf" style="display:none" class="alert al-ok">✓ <span id="tr-conf-msg"></span></div>
+  <div id="tr-historial" style="margin-top:8px"></div>
+</div>
+
+<!-- FLUJO -->
+<div id="tab-flujo" class="section">
+  <div class="two-col">
+    <div>
+      <div class="sec-label">Historial de transferencias</div>
+      <div id="flujo-hist"></div>
+    </div>
+    <div>
+      <div class="sec-label">Composición del capital por lote</div>
+      <div id="flujo-origen"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NUEVO LOTE -->
+<div id="tab-nuevo" class="section">
+  <div class="card">
+    <div class="card-title">Registrar nueva compra / lote</div>
+    <div class="form-grid">
+      <div class="fg"><label>Producto</label><input id="n-prod" placeholder="Ej: 50 iPhone 16"/></div>
+      <div class="fg"><label>Cliente / Destino</label><input id="n-cliente" placeholder="Ej: PELLEGRINI"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Monto de compra (USD)</label><input id="n-compra" type="number" placeholder="10000" step="0.01"/></div>
+      <div class="fg"><label>Monto de venta (USD)</label><input id="n-venta" type="number" placeholder="11500" step="0.01"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Fecha</label><input id="n-fecha" type="date"/></div>
+      <div class="fg"><label>Observación</label><input id="n-obs" placeholder="Opcional"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>¿Parte del capital viene de otro lote?</label>
+        <select id="n-origen-cap" onchange="toggleOrigenMonto()">
+          <option value="">No — capital propio / financiación externa</option>
+        </select>
+      </div>
+      <div class="fg" id="n-monto-orig-wrap" style="display:none">
+        <label>Monto que viene de ese lote (USD)</label>
+        <input id="n-monto-orig" type="number" placeholder="0.00" step="0.01"/>
+      </div>
+      <div class="fg" id="n-tipo-reinv-wrap" style="display:none">
+        <label>¿Cómo fue la reinversión?</label>
+        <select id="n-tipo-reinv">
+          <option value="directa">🔄 Directo a la compra — nunca tocó caja</option>
+          <option value="caja">✅ Pasó por caja/banco primero</option>
+        </select>
+      </div>
+    </div>
+    <div id="n-reinv-info" style="display:none;margin-bottom:12px"></div>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Distribución de ganancia</label>
+        <select id="n-pct-lara" onchange="togglePctLibre()">
+          <option value="50">50% Lara / 50% Ataxe (default)</option>
+          <option value="100">100% Lara</option>
+          <option value="0">100% Ataxe</option>
+          <option value="custom">Otro % personalizado</option>
+        </select>
+      </div>
+      <div class="fg" id="n-pct-libre-wrap" style="display:none">
+        <label>% de Lara (0-100)</label>
+        <input id="n-pct-libre" type="number" min="0" max="100" placeholder="Ej: 30"/>
+      </div>
+    </div>
+    <button class="btn btn-dark" onclick="crearLote()">＋ Crear lote</button>
+  </div>
+  <div id="n-conf" style="display:none" class="alert al-ok">✓ <span id="n-conf-msg"></span></div>
+</div>
+
+<!-- REGISTRAR COBRO -->
+<div id="tab-cobrar" class="section">
+  <div class="card">
+    <div class="card-title">Registrar pago de cliente</div>
+    <div class="form-grid">
+      <div class="fg"><label>Lote</label>
+        <select id="rc-lote" onchange="actualizarLoteInfo()"></select>
+      </div>
+    </div>
+    <div id="rc-lote-info" style="display:none;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+        <div class="stat-mini"><div class="sm-label">Cliente</div><div class="sm-value" id="rc-cliente-val" style="font-size:13px">—</div></div>
+        <div class="stat-mini"><div class="sm-label">Venta pactada</div><div class="sm-value" id="rc-venta-val">u$0</div></div>
+        <div class="stat-mini"><div class="sm-label">Ya cobrado</div><div class="sm-value hc-green" id="rc-cobrado-val">u$0</div></div>
+        <div class="stat-mini"><div class="sm-label">Por cobrar</div><div class="sm-value hc-red" id="rc-deuda-val">u$0</div></div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Monto cobrado (USD)</label><input id="rc-monto" type="number" placeholder="0.00" step="0.01"/></div>
+      <div class="fg"><label>Moneda real</label>
+        <select id="rc-moneda">
+          <option value="usd">USD</option>
+          <option value="ars">ARS (pesos argentinos)</option>
+          <option value="usdt">USDT (crypto)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Medio de cobro</label>
+        <select id="rc-medio">
+          <option value="caja">Caja (efectivo)</option>
+          <option value="santander">Banco Santander</option>
+          <option value="galicia">Banco Galicia</option>
+          <option value="mercadopago">MercadoPago</option>
+          <option value="frances">Banco Francés (BBVA)</option>
+          <option value="usdt">USDT / Crypto</option>
+        </select>
+      </div>
+      <div class="fg"><label>Fecha</label><input id="rc-fecha" type="date"/></div>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>Nota</label><input id="rc-nota" placeholder="Ref. transferencia, número de operación, etc."/></div>
+    </div>
+    <button class="btn btn-dark" onclick="registrarCobro()">◉ Registrar cobro</button>
+  </div>
+  <div id="rc-conf" style="display:none" class="alert al-ok">✓ <span id="rc-conf-msg"></span></div>
+  <div id="rc-historial" style="margin-top:8px"></div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="edit-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:var(--r2);padding:28px;width:100%;max-width:520px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:16px;font-weight:700">Editar lote <span id="edit-modal-id"></span></div>
+      <button onclick="cerrarModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3);line-height:1">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Cliente</label><input id="edit-cliente" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;width:100%"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Producto</label><input id="edit-producto" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;width:100%"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Compra (USD)</label><input id="edit-compra" type="number" step="0.01" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Venta (USD)</label><input id="edit-venta" type="number" step="0.01" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Cobrado (USD)</label><input id="edit-cobrado" type="number" step="0.01" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
+      <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Fecha</label><input id="edit-fecha" type="date" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
+    </div>
+    <div style="margin-bottom:12px"><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Observación</label><input id="edit-obs" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;width:100%"/></div>
+    <div style="margin-bottom:20px">
+      <label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Distribución de ganancia</label>
+      <select id="edit-pct-lara" onchange="toggleEditPctLibre()" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;width:100%;margin-bottom:8px">
+        <option value="50">50% Lara / 50% Ataxe</option>
+        <option value="100">100% Lara</option>
+        <option value="0">100% Ataxe</option>
+        <option value="custom">Otro % personalizado</option>
+      </select>
+      <div id="edit-pct-libre-wrap" style="display:none">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--ink3);display:block;margin-bottom:5px">% de Lara (0-100)</label>
+        <input id="edit-pct-libre" type="number" min="0" max="100" placeholder="Ej: 30" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="cerrarModal()" style="padding:9px 18px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:13px;font-family:var(--font)">Cancelar</button>
+      <button onclick="guardarEdicion()" style="padding:9px 18px;border-radius:var(--r);border:none;background:var(--ink);color:#fff;cursor:pointer;font-size:13px;font-family:var(--font);font-weight:600">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── SUPABASE CONFIG ─────────────────────────────────────────
+const SUPA_URL = 'https://sqsroqvbauwhbbkfpeba.supabase.co';
+const SUPA_KEY = 'sb_publishable_5h7hYBghOViYcMYot8G2Xw_mdxNctYi';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// Flag: true = usar Supabase, false = solo localStorage
+var ONLINE_MODE = false;
+
+// Indicador visual de modo
+function setModoIndicador(online){
+  var ind = document.getElementById('save-indicator');
+  if(!ind) return;
+  if(online){
+    ind.textContent = '● Online';
+    ind.style.color = '#4a90e2';
+  } else {
+    ind.textContent = '● Local';
+    ind.style.color = '#888';
+  }
+}
+
+// ─── SYNC: cargar desde Supabase ─────────────────────────────
+async function syncDesdeSupabase(){
+  try {
+    // Lotes
+    var { data: lotesDB, error: e1 } = await supa.from('lotes').select('*').order('id');
+    if(e1) throw e1;
+
+    // Reemplazar lotes en ST con los de Supabase
+    ST.lotes = lotesDB.map(function(l){
+      // Buscar cobros/transferencias del lote en ST si ya existen
+      var existing = ST.lotes.find(function(x){ return x.id === l.id; }) || {};
+      return {
+        id: l.id,
+        fecha: l.fecha ? l.fecha.slice(8,10)+'/'+l.fecha.slice(5,7)+'/'+l.fecha.slice(0,4) : '',
+        cliente: l.cliente,
+        producto: l.producto,
+        compra: parseFloat(l.compra)||0,
+        venta: parseFloat(l.venta)||0,
+        cobrado: parseFloat(l.cobrado)||0,
+        ganancia: parseFloat(l.ganancia)||0,
+        pctLara: parseFloat(l.pct_lara)||50,
+        obs: l.obs||'',
+        cobros: existing.cobros||[],
+        trRecibidas: existing.trRecibidas||[],
+        trDadas: existing.trDadas||[]
+      };
+    });
+
+    // Transferencias
+    var { data: trDB } = await supa.from('transferencias').select('*').order('created_at');
+    ST.transferencias = (trDB||[]).map(function(t){
+      return { desde: t.lote_desde, hacia: t.lote_hacia, monto: parseFloat(t.monto), fecha: t.fecha, nota: t.nota||'', tipo: t.tipo };
+    });
+    // Reconstruir trDadas/trRecibidas en cada lote
+    ST.lotes.forEach(function(l){ l.trDadas=[]; l.trRecibidas=[]; });
+    ST.transferencias.forEach(function(t){
+      var lO = ST.lotes.find(function(l){ return l.id===t.desde; });
+      var lD = ST.lotes.find(function(l){ return l.id===t.hacia; });
+      if(lO) lO.trDadas.push({ hacia:t.hacia, monto:t.monto, fecha:t.fecha, nota:t.nota });
+      if(lD) lD.trRecibidas.push({ desde:t.desde, monto:t.monto, fecha:t.fecha, nota:t.nota });
+    });
+
+    // Cobros
+    var { data: cobrosDB } = await supa.from('cobros').select('*').order('created_at');
+    ST.lotes.forEach(function(l){ l.cobros=[]; });
+    (cobrosDB||[]).forEach(function(c){
+      var l = ST.lotes.find(function(x){ return x.id===c.lote_id; });
+      if(l) l.cobros.push({ monto:parseFloat(c.monto), moneda:c.moneda, medio:c.medio, fecha:c.fecha, nota:c.nota||'' });
+    });
+
+    // Caja
+    var { data: cajaDB } = await supa.from('caja').select('*');
+    (cajaDB||[]).forEach(function(c){
+      var el = document.getElementById('caja-'+c.cuenta);
+      if(el && parseFloat(c.monto)) el.value = parseFloat(c.monto)||'';
+    });
+
+    // Tránsito
+    var { data: transitoDB } = await supa.from('transito_items').select('*').order('created_at');
+    ST.transitoItems = (transitoDB||[]).map(function(t){
+      return { id: t.id, concepto: t.concepto||'', monto: parseFloat(t.monto)||0, nota: t.nota||'' };
+    });
+
+    // Notas clientes
+    var { data: notasDB } = await supa.from('cliente_notas').select('*');
+    ST.clienteNotas = {};
+    (notasDB||[]).forEach(function(n){ ST.clienteNotas[n.cliente] = n.nota; });
+
+    // Seq
+    var maxId = Math.max.apply(null, ST.lotes.map(function(l){ return l.id; }));
+    if(maxId > ST.seq) ST.seq = maxId;
+
+    ONLINE_MODE = true;
+    setModoIndicador(true);
+    renderAll();
+    console.log('✅ Sincronizado con Supabase');
+  } catch(err) {
+    console.warn('⚠ Sin conexión a Supabase, usando datos locales:', err.message);
+    ONLINE_MODE = false;
+    setModoIndicador(false);
+  }
+}
+
+// ─── SAVE: guardar en Supabase ────────────────────────────────
+async function saveToSupabase(tipo, data){
+  if(!ONLINE_MODE) return;
+  try {
+    if(tipo === 'lote_update'){
+      // fecha a YYYY-MM-DD
+      var p = data.fecha.split('/');
+      var fechaISO = p.length===3 ? p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0') : data.fecha;
+      await supa.from('lotes').upsert({
+        id: data.id, fecha: fechaISO, cliente: data.cliente, producto: data.producto,
+        compra: data.compra, venta: data.venta, cobrado: data.cobrado,
+        pct_lara: data.pctLara, obs: data.obs||''
+      });
+    }
+    else if(tipo === 'lote_insert'){
+      var p2 = data.fecha.split('/');
+      var fechaISO2 = p2.length===3 ? p2[2]+'-'+p2[1].padStart(2,'0')+'-'+p2[0].padStart(2,'0') : data.fecha;
+      var { data: inserted } = await supa.from('lotes').insert({
+        fecha: fechaISO2, cliente: data.cliente, producto: data.producto,
+        compra: data.compra, venta: data.venta, cobrado: 0,
+        pct_lara: data.pctLara||50, obs: data.obs||''
+      }).select().single();
+      if(inserted) data.id = inserted.id;
+    }
+    else if(tipo === 'cobro'){
+      await supa.from('cobros').insert({
+        lote_id: data.loteId, monto: data.monto, moneda: data.moneda,
+        medio: data.medio, fecha: data.fecha, nota: data.nota||''
+      });
+      // Actualizar cobrado del lote
+      await supa.from('lotes').update({ cobrado: data.cobradoTotal }).eq('id', data.loteId);
+    }
+    else if(tipo === 'transferencia'){
+      await supa.from('transferencias').insert({
+        lote_desde: data.desde, lote_hacia: data.hacia,
+        monto: data.monto, fecha: data.fecha, tipo: data.tipo||'directa', nota: data.nota||''
+      });
+      // Actualizar cobrado del lote origen
+      await supa.from('lotes').update({ cobrado: data.cobradoOrigen }).eq('id', data.desde);
+    }
+    else if(tipo === 'caja'){
+      await supa.from('caja').update({ monto: data.monto }).eq('cuenta', data.cuenta);
+    }
+    else if(tipo === 'transito_insert'){
+      var { data: ins } = await supa.from('transito_items').insert({ concepto:'', monto:0, nota:'' }).select().single();
+      if(ins) data.id = ins.id;
+    }
+    else if(tipo === 'transito_update'){
+      await supa.from('transito_items').update({ concepto:data.concepto, monto:data.monto, nota:data.nota }).eq('id', data.id);
+    }
+    else if(tipo === 'transito_delete'){
+      await supa.from('transito_items').delete().eq('id', data.id);
+    }
+    else if(tipo === 'nota_cliente'){
+      await supa.from('cliente_notas').upsert({ cliente: data.cliente, nota: data.nota }, { onConflict: 'cliente' });
+    }
+
+    var ind = document.getElementById('save-indicator');
+    if(ind){ ind.textContent='● Guardado online'; ind.style.color='#2ecc8a'; }
+  } catch(err){
+    console.warn('Error guardando en Supabase:', err.message);
+    var ind = document.getElementById('save-indicator');
+    if(ind){ ind.textContent='⚠ Error al guardar'; ind.style.color='var(--red)'; }
+  }
+}
+
+const MEDIOS={caja:'Caja',santander:'Santander',galicia:'Galicia',mercadopago:'MercadoPago',frances:'Francés',usdt:'USDT',reinversion:'Reinversión',reinversion_caja:'Reinv. vía caja',reinversion_directa:'Reinv. directa'};
+const fU=n=>n===0?'u$0':'u$'+Math.abs(Math.round(n)).toLocaleString('es-AR');
+const fP=n=>Math.round(n)+'%';
+const hoy=()=>new Date().toISOString().slice(0,10);
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let ST={
+  seq:26,
+  lotes:[
+    {id:1, fecha:'19/03/2026', cliente:'ROSANIA',       producto:'TV',                                compra:10600, venta:11000, cobrado:11000, ganancia:400,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:2, fecha:'22/04/2026', cliente:'CAMIONCITO',    producto:'CELULARES',                         compra:15000, venta:15470, cobrado:9900,  ganancia:470,  obs:'IR AGARRANDO CUANDO SOBRE CAJA U$5100', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:3, fecha:'30/04/2026', cliente:'COMPUS TRINI X7',producto:'NOTEBOOK',                         compra:13049, venta:15509, cobrado:11100, ganancia:2460, obs:'4400 DEBE JUAN DA SILVA', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:4, fecha:'14/04/2026', cliente:'MARTIN',        producto:'TABLETS',                           compra:5945,  venta:6705,  cobrado:6705,  ganancia:760,  obs:'1400 RESTA STOCK TABLETS + GANANCIA DEL STOCK', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:5, fecha:'14/04/2026', cliente:'ROSANIA',       producto:'TABLETS',                           compra:5620,  venta:6380,  cobrado:6370,  ganancia:760,  obs:'TOTAL $1.600 FALTA COBRAR TABLETS (GANANCIA)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:6, fecha:'14/04/2026', cliente:'LAUREANO',      producto:'IPHONE X6',                         compra:2640,  venta:2850,  cobrado:2850,  ganancia:210,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:7, fecha:'15/04/2026', cliente:'ANDRIACH',      producto:'18 PS5',                            compra:9720,  venta:10890, cobrado:5800,  ganancia:1170, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:8, fecha:'15/04/2026', cliente:'ATAXE',         producto:'32 PS5',                            compra:17280, venta:18080, cobrado:15450, ganancia:800,  obs:'U$11.350 SE PUSO PARA TABLETS PELLEGRINI, U$2.500 + U$1.600 CAMARGO', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:9, fecha:'24/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7991 59 (TAB)',            compra:12333, venta:15045, cobrado:0,     ganancia:2712, obs:'1 MES DE PLAZO (FALTA PONER UN PEDACITO DE COMPRA U$1165)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:10,fecha:'20/04/2026', cliente:'LAUREANO',      producto:'30 A17',                            compra:3450,  venta:3570,  cobrado:3570,  ganancia:120,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:11,fecha:'19/02/2026', cliente:'ROSANIA',       producto:'CELULARES',                         compra:15633, venta:17342, cobrado:17342, ganancia:1709, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:12,fecha:'12/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004431 (30 A36)',          compra:8080,  venta:9480,  cobrado:9480,  ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:13,fecha:'02/12/2025',  cliente:'PELLEGRINI',    producto:'B-00001-00004376 (118 A17/15 A36)',  compra:29120, venta:34370, cobrado:34370, ganancia:5250, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:14,fecha:'26/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004497 (63 IPHONE 16)',    compra:42860, venta:45360, cobrado:45360, ganancia:2500, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:15,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004682 (13 S25 PLUS)',     compra:11085, venta:12065, cobrado:12065, ganancia:980,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:16,fecha:'15/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004606 (27 A26)',          compra:5590,  venta:6750,  cobrado:6750,  ganancia:1160, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:17,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004683 (67 A26)',          compra:13850, venta:16750, cobrado:2335,  ganancia:2900, obs:'FALTA QUE ENTRE LA PARTE DE NEWSAN (U$12.500)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:18,fecha:'05/01/2026', cliente:'PEDAL',            producto:'JOYSTICK',                         compra:23500, venta:23500, cobrado:0,     ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:19,fecha:'05/01/2026', cliente:'PEDAL',         producto:'ATAXE',                           compra:22090, venta:22090, cobrado:10411, ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:20,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'VIVIANA G15',                       compra:10000, venta:10100, cobrado:0,     ganancia:100,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:21,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'IMPOSTAR A16',                      compra:14100, venta:14425, cobrado:14425, ganancia:325,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:22,fecha:'14/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7772 (TABL)',              compra:13500, venta:16095, cobrado:0,     ganancia:2595, obs:'PLAZO YA VENCIDO', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:23,fecha:'18/05/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8139 (TABL)',              compra:5200,  venta:6100,  cobrado:0,     ganancia:900,  obs:'PLAZO VENCE 18/06', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:24,fecha:'14/05/2026', cliente:'ATAXE',         producto:'WATCHONN (500)',                     compra:14500, venta:15900, cobrado:11700, ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:25,fecha:'21/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8018 5 S26',               compra:3775,  venta:4200,  cobrado:0,     ganancia:425,  obs:'PLAZO VENCE 24/05', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:26,fecha:'21/05/2026', cliente:'ATAXE',         producto:'PS5 (7) + NINTENDO (3)',             compra:5300,  venta:5830,  cobrado:0,     ganancia:530,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+  ],
+  transferencias:[],
+  transitoItems:[],
+  clienteNotas:{},
+  cobroHistorial:[]
+};
+
+// ─── COMPUTED ─────────────────────────────────────────────────────────────────
+const porCobrar=l=>Math.max(0,l.venta-l.cobrado);
+const recupero=l=>l.venta>0?Math.min((l.cobrado/l.venta)*100,100):0;
+const makeup=l=>l.compra>0?((l.venta-l.compra)/l.compra)*100:0;
+const capDado=l=>l.trDadas.reduce((a,t)=>a+t.monto,0);
+const capRecibido=l=>l.trRecibidas.reduce((a,t)=>a+t.monto,0);
+const capDisp=l=>Math.max(0,l.cobrado-capDado(l));
+
+function tieneVencimiento(l){
+  if(!l.obs)return false;
+  const o=l.obs.toUpperCase();
+  return o.includes('VENCE')||o.includes('PLAZO')||o.includes('MES DE PLAZO')||o.includes('DIA')||/\d{1,2}\/\d{2}/.test(l.obs);
+}
+function estadoBadge(l){
+  const pc=porCobrar(l);
+  if(l.obs&&l.obs.toUpperCase().includes('VENCIDO'))return'<span class="badge b-danger">Vencido</span>';
+  if(pc===0&&l.cobrado>0)return'<span class="badge b-ok">Cobrado</span>';
+  if(l.cobrado===0&&l.venta>0&&tieneVencimiento(l))return'<span class="badge b-info">A plazo</span>';
+  if(l.cobrado===0&&l.venta>0)return'<span class="badge b-danger">Sin cobrar</span>';
+  if(pc>0&&tieneVencimiento(l))return'<span class="badge b-info">A plazo</span>';
+  if(pc>0)return'<span class="badge b-warn">Parcial</span>';
+  return'<span class="badge b-gray">—</span>';
+}
+
+// ─── RENDERS ──────────────────────────────────────────────────────────────────
+function renderHero(){
+  const totC=ST.lotes.reduce((a,l)=>a+l.compra,0);
+  const totV=ST.lotes.reduce((a,l)=>a+l.venta,0);
+  const totCob=ST.lotes.reduce((a,l)=>a+l.cobrado,0);
+  const totPC=ST.lotes.reduce((a,l)=>a+porCobrar(l),0);
+  const totGan=ST.lotes.reduce((a,l)=>a+l.ganancia,0);
+  const muG=totC>0?((totV-totC)/totC)*100:0;
+  const lComp=ST.lotes.filter(l=>porCobrar(l)===0&&l.cobrado>0).length;
+  const totGanLara=ST.lotes.reduce((a,l)=>a+ganLara(l),0);
+  const totGanAtaxe=ST.lotes.reduce((a,l)=>a+ganAtaxe(l),0);
+  const lPend=ST.lotes.filter(l=>porCobrar(l)>0).length;
+  const totTr=ST.transferencias.reduce((a,t)=>a+t.monto,0);
+  document.getElementById('h-lotes').textContent=ST.lotes.length+' lotes';
+  document.getElementById('hero').innerHTML=`
+    <div class="hero-card dark"><div class="hc-label">Capital invertido</div><div class="hc-value">${fU(totC)}</div><div class="hc-sub">${ST.lotes.length} lotes activos</div></div>
+    <div class="hero-card"><div class="hc-label">Venta pactada</div><div class="hc-value">${fU(totV)}</div><div class="hc-sub">Make-up general: ${muG.toFixed(1)}%</div></div>
+    <div class="hero-card"><div class="hc-label">Ya cobrado</div><div class="hc-value hc-green">${fU(totCob)}</div><div class="hc-sub">${fP(totV>0?(totCob/totV)*100:0)} del total</div></div>
+    <div class="hero-card"><div class="hc-label">Por cobrar</div><div class="hc-value hc-red">${fU(totPC)}</div><div class="hc-sub">${lPend} lotes con saldo</div></div>
+    <div class="hero-card"><div class="hc-label">Ganancia total</div><div class="hc-value hc-green">${fU(totGan)}</div><div class="hc-sub">${lComp} lotes cobrados</div></div>
+    <div class="hero-card" style="border-color:#e8c5f5"><div class="hc-label">Ganancia de Lara</div><div class="hc-value" style="color:#7c3aed">${fU(totGanLara)}</div><div class="hc-sub">Su parte del negocio</div></div>
+    <div class="hero-card"><div class="hc-label">Ganancia de Ataxe</div><div class="hc-value hc-green">${fU(totGanAtaxe)}</div><div class="hc-sub">Tu parte del negocio</div></div>
+    ${totTr>0?`<div class="hero-card"><div class="hc-label">Capital reutilizado</div><div class="hc-value hc-purple">${fU(totTr)}</div><div class="hc-sub">Entre lotes</div></div>`:''}
+  `;
+}
+
+function renderResTabla(){
+  document.getElementById('res-tbl').innerHTML=ST.lotes.map(l=>{
+    const r=recupero(l);
+    return`<tr>
+      <td class="num" style="color:var(--ink3)">${l.id}</td>
+      <td><div style="font-weight:600;font-size:12px">${l.producto.length>22?l.producto.slice(0,22)+'…':l.producto}</div><div style="font-size:11px;color:var(--ink3);font-family:var(--mono)">${l.cliente}</div></td>
+      <td class="num">${fU(l.compra)}</td>
+      <td class="ng">${fU(l.ganancia)}</td>
+      <td><div style="display:flex;align-items:center;gap:6px"><div class="pb" style="flex:1"><div class="pf ${r>=100?'pf-g':r>0?'pf-a':'pf-r'}" style="width:${r}%"></div></div><span style="font-family:var(--mono);font-size:10px;color:var(--ink3);min-width:26px">${Math.round(r)}%</span></div></td>
+      <td>${estadoBadge(l)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAlertas(){
+  const venc=ST.lotes.filter(l=>l.obs&&l.obs.includes('VENCIDO'));
+  const prox=ST.lotes.filter(l=>l.obs&&l.obs.includes('VENCE'));
+  const sinCob=ST.lotes.filter(l=>l.cobrado===0&&l.venta>0&&!(l.obs&&(l.obs.includes('VENCIDO')||l.obs.includes('VENCE'))));
+  let h='';
+  venc.forEach(l=>{h+=`<div class="alert al-red">⚠ Lote ${l.id} · ${l.cliente} · ${fU(porCobrar(l))} · ${l.obs}</div>`;});
+  prox.forEach(l=>{h+=`<div class="alert al-warn">◷ Lote ${l.id} · ${l.cliente} · ${fU(porCobrar(l))} · ${l.obs}</div>`;});
+  sinCob.slice(0,5).forEach(l=>{h+=`<div class="alert" style="background:var(--bg);border:1px solid var(--border);color:var(--ink3)">· Lote ${l.id} · ${l.cliente} · ${l.producto.slice(0,28)} · ${fU(porCobrar(l))} sin cobrar</div>`;});
+  if(!h)h='<div class="alert al-ok">✓ Sin alertas críticas.</div>';
+  document.getElementById('res-alertas').innerHTML=h;
+}
+
+function renderResPC(){
+  const cl={};
+  ST.lotes.forEach(l=>{
+    const pc=porCobrar(l);
+    if(pc>0){
+      if(!cl[l.cliente])cl[l.cliente]={total:0,lotes:[]};
+      cl[l.cliente].total+=pc;
+      cl[l.cliente].lotes.push({id:l.id,monto:pc});
+    }
+  });
+  document.getElementById('res-pc').innerHTML=Object.entries(cl).sort((a,b)=>b[1].total-a[1].total).map(([c,d])=>{
+    const lotesStr=d.lotes.map(l=>'L'+l.id+(d.lotes.length>1?' '+fU(l.monto):'')).join(', ');
+    return`<div style="padding:9px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:600;font-size:13px">${c}</div>
+        <div class="nr">${fU(d.total)}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:4px">(${lotesStr})</div>
+    </div>`;
+  }).join('')||'<div class="alert al-ok">✓ Todos los clientes al día.</div>';
+}
+
+function renderLotesTbl(){
+  document.getElementById('lotes-tbl').innerHTML=ST.lotes.map(l=>{
+    const pc=porCobrar(l);const mu=makeup(l);
+    // Build transfer tags for this lote
+    const trDadasTags=l.trDadas.map(t=>'<span style="display:inline-flex;align-items:center;gap:3px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-light);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap">→ L'+t.hacia+' '+fU(t.monto)+'</span>').join(' ');
+    const trRecibTags=l.trRecibidas.map(t=>'<span style="display:inline-flex;align-items:center;gap:3px;background:var(--purple-bg);color:var(--purple);border:1px solid #C5BFFA;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap">← L'+t.desde+' '+fU(t.monto)+'</span>').join(' ');
+    const trTags=(trDadasTags+' '+trRecibTags).trim();
+    // Cobros de reinversion
+    const reinvCobros=l.cobros.filter(c=>c.medio==='reinversion');
+    const reinvDirecta=l.cobros.filter(c=>c.medio==='reinversion_directa');
+    const reinvCaja=l.cobros.filter(c=>c.medio==='reinversion_caja'||c.medio==='reinversion');
+    const reinvTagDirecta=reinvDirecta.length?'<span style="display:inline-flex;align-items:center;gap:3px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-light);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap">🔄 directo '+fU(reinvDirecta.reduce(function(a,c){return a+c.monto;},0))+'</span>':'';
+    const reinvTagCaja=reinvCaja.length?'<span style="display:inline-flex;align-items:center;gap:3px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-light);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap">✅ vía caja '+fU(reinvCaja.reduce(function(a,c){return a+c.monto;},0))+'</span>':'';
+    const reinvTag=(reinvTagDirecta+' '+reinvTagCaja).trim();
+    return`<tr>
+      <td class="num" style="color:var(--ink3)">${l.id}</td>
+      <td class="num" style="color:var(--ink3)">${l.fecha}</td>
+      <td style="font-weight:600;font-size:12px">${l.cliente}</td>
+      <td style="font-size:12px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.producto}">${l.producto}</td>
+      <td class="num">${fU(l.compra)}</td>
+      <td class="num">${fU(l.venta)}</td>
+      <td class="ng">${fU(l.cobrado)}${reinvTag?'<br>'+reinvTag:''}</td>
+      <td class="${pc>0?'nr':'num'}">${pc>0?fU(pc):'—'}</td>
+      <td class="ng">${fU(l.ganancia)}</td>
+      <td class="np">${mu.toFixed(1)}%</td>
+      <td style="font-size:11px;font-family:var(--mono)">
+        <div style="color:#7c3aed">Lara: ${fU(ganLara(l))}</div>
+        <div style="color:var(--green)">Ataxe: ${fU(ganAtaxe(l))}</div>
+        <div style="color:var(--ink3);font-size:10px">${getPctLara(l)}% / ${100-getPctLara(l)}%</div>
+      </td>
+      <td>${estadoBadge(l)}${trTags?'<br><span style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">'+trTags+'</span>':''}</td>
+      <td class="obs-cell" title="${l.obs}">${l.obs||'—'}</td>
+      <td><button onclick="abrirModal(${l.id})" style="padding:4px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap">✎ editar</button></td>
+    </tr>`;
+  }).join('');
+  // Mostrar transferencias registradas en lotes
+  const trRows=ST.lotes.filter(l=>l.trRecibidas.length||l.trDadas.length);
+  if(trRows.length){
+    document.getElementById('lotes-transferencias').innerHTML=`<div class="sec-label" style="margin-top:16px">Transferencias de capital registradas</div>`+
+    trRows.map(l=>`<div style="margin-bottom:8px;font-size:12px;font-family:var(--mono);color:var(--ink2)">
+      <strong>Lote ${l.id} · ${l.cliente}</strong>
+      ${l.trRecibidas.map(t=>`<div style="color:var(--green);padding-left:12px">← Recibió ${fU(t.monto)} del Lote ${t.desde} (${t.fecha}${t.nota?` · ${t.nota}`:''})</div>`).join('')}
+      ${l.trDadas.map(t=>`<div style="color:var(--amber);padding-left:12px">→ Envió ${fU(t.monto)} al Lote ${t.hacia} (${t.fecha}${t.nota?` · ${t.nota}`:''})</div>`).join('')}
+    </div>`).join('');
+  } else {
+    document.getElementById('lotes-transferencias').innerHTML='';
+  }
+}
+
+function renderClientes(){
+  const data={};
+  ST.lotes.forEach(l=>{
+    if(!data[l.cliente])data[l.cliente]={lotes:0,compra:0,venta:0,cobrado:0,ganancia:0,pc:0};
+    const d=data[l.cliente];d.lotes++;d.compra+=l.compra;d.venta+=l.venta;d.cobrado+=l.cobrado;d.ganancia+=l.ganancia;d.pc+=porCobrar(l);
+  });
+  if(!ST.clienteNotas)ST.clienteNotas={};
+  document.getElementById('cl-grid').innerHTML=Object.entries(data).sort((a,b)=>b[1].venta-a[1].venta).map(([nombre,d])=>{
+    const notaId='nota_'+nombre.replace(/\s+/g,'_');
+    const notaVal=ST.clienteNotas[nombre]||'';
+    return `
+    <div class="cl-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+        <div><div style="font-size:15px;font-weight:700">${nombre}</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:1px">${d.lotes} lote${d.lotes>1?'s':''}</div></div>
+        ${d.pc>0?`<span class="badge b-danger">${fU(d.pc)} debe</span>`:`<span class="badge b-ok">Al dia</span>`}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0">
+        <div class="stat-mini"><div class="sm-label">Compra</div><div class="sm-value">${fU(d.compra)}</div></div>
+        <div class="stat-mini"><div class="sm-label">Venta</div><div class="sm-value">${fU(d.venta)}</div></div>
+        <div class="stat-mini"><div class="sm-label">Cobrado</div><div class="sm-value" style="color:var(--green)">${fU(d.cobrado)}</div></div>
+        <div class="stat-mini"><div class="sm-label">Ganancia</div><div class="sm-value" style="color:var(--green)">${fU(d.ganancia)}</div></div>
+      </div>
+      ${d.pc>0?`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px"><span>Recupero</span><span>${fP(d.venta>0?(d.cobrado/d.venta)*100:0)}</span></div><div class="pb" style="height:5px"><div class="pf pf-a" style="width:${d.venta>0?Math.min((d.cobrado/d.venta)*100,100):0}%"></div></div></div>`:''}
+      <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
+        <div style="font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:5px">Nota</div>
+        <textarea id="${notaId}"
+          placeholder="Escribi una observacion sobre este cliente..."
+          oninput="guardarNota('${nombre}', this.value)"
+          style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:12px;padding:8px 10px;font-family:var(--font);outline:none;resize:vertical;min-height:60px;line-height:1.5;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--ink)'"
+          onblur="this.style.borderColor='var(--border2)'"
+        >${notaVal}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPorCobrar(){
+  const pend=ST.lotes.filter(l=>porCobrar(l)>0).sort((a,b)=>{
+    const av=a.obs&&a.obs.includes('VENCIDO')?0:a.obs&&a.obs.includes('VENCE')?1:2;
+    const bv=b.obs&&b.obs.includes('VENCIDO')?0:b.obs&&b.obs.includes('VENCE')?1:2;
+    return av!==bv?av-bv:porCobrar(b)-porCobrar(a);
+  });
+  const tot=pend.reduce((a,l)=>a+porCobrar(l),0);
+  document.getElementById('pc-hero').innerHTML=`
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+      <div style="font-size:32px;font-weight:700;color:var(--red)">${fU(tot)}</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--ink3)">pendiente en ${pend.length} lotes</div>
+    </div>`;
+  document.getElementById('pc-lista').innerHTML=pend.map(l=>{
+    const pc=porCobrar(l);
+    const esV=l.obs&&l.obs.includes('VENCIDO');
+    const esP=l.obs&&l.obs.includes('VENCE');
+    const bg=esV?'var(--red-bg)':esP?'var(--amber-bg)':'var(--white)';
+    const col=esV?'var(--red)':esP?'var(--amber)':'var(--ink)';
+    return`<div class="pc-row" style="background:${bg}">
+      <div style="flex:1">
+        <div style="font-weight:700;color:${col}">${l.cliente} <span style="font-weight:400;color:var(--ink3)">— Lote ${l.id}</span></div>
+        <div style="font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:2px">${l.producto.slice(0,50)}</div>
+        ${l.obs?`<div style="font-family:var(--mono);font-size:10px;color:${col};margin-top:4px">${l.obs}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:var(--mono);font-size:17px;font-weight:700;color:${col}">${fU(pc)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:1px">de ${fU(l.venta)} pactado</div>
+        <div style="margin-top:4px">${estadoBadge(l)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFlujo(){
+  document.getElementById('flujo-hist').innerHTML=ST.transferencias.length
+    ?ST.transferencias.map(t=>`<div class="flow-row">
+        <span style="background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:3px">Lote ${t.desde}</span>
+        <span style="color:var(--ink3)">──▶</span>
+        <span style="color:var(--purple);font-weight:600">${fU(t.monto)}</span>
+        <span style="color:var(--ink3)">──▶</span>
+        <span style="background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:3px">Lote ${t.hacia}</span>
+        <span style="color:var(--ink3)">${t.fecha}</span>
+        ${t.nota?`<span style="color:var(--ink3)">${t.nota}</span>`:''}
+      </div>`).join('')
+    :'<div class="alert" style="background:var(--bg);border:1px solid var(--border);color:var(--ink3)">Todavía no hay transferencias. Registrá la primera en la pestaña "Transferir capital".</div>';
+
+  document.getElementById('flujo-origen').innerHTML=ST.lotes.map(l=>{
+    const tot=l.compra;const rec=capRecibido(l);
+    const propio=Math.max(0,tot-rec);
+    const pctP=tot>0?Math.min((propio/tot)*100,100):100;
+    const pctT=tot>0?Math.min((rec/tot)*100,100):0;
+    return`<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px">
+        <div><span style="font-family:var(--mono);color:var(--ink3);font-size:10px">L${l.id}</span> ${l.producto.slice(0,24)}</div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--ink3)">${fU(tot)}</span>
+      </div>
+      <div style="height:7px;border-radius:4px;display:flex;overflow:hidden;gap:2px">
+        <div style="width:${pctP}%;background:var(--green);opacity:.7" title="Propio: ${fU(propio)}"></div>
+        ${pctT>0?`<div style="width:${pctT}%;background:var(--purple);opacity:.7" title="Transferido: ${fU(rec)}"></div>`:''}
+      </div>
+      <div style="display:flex;gap:14px;font-size:10px;color:var(--ink3);font-family:var(--mono);margin-top:3px">
+        <span>● Propio ${fP(pctP)}</span>
+        ${pctT>0?`<span style="color:var(--purple)">● Transferido ${fP(pctT)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrHistorial(){
+  if(!ST.transferencias.length){document.getElementById('tr-historial').innerHTML='';return;}
+  document.getElementById('tr-historial').innerHTML=`<div class="sec-label">Transferencias registradas</div>`+
+    ST.transferencias.map(t=>`<div class="flow-row">
+      <span style="background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:3px">L${t.desde}</span>
+      <span style="color:var(--ink3)">──▶</span>
+      <span style="color:var(--purple);font-weight:600">${fU(t.monto)}</span>
+      <span style="color:var(--ink3)">──▶</span>
+      <span style="background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:3px">L${t.hacia}</span>
+      <span style="color:var(--ink3)">${t.fecha}</span>
+      ${t.nota?`<span style="color:var(--ink3)">${t.nota}</span>`:''}
+    </div>`).join('');
+}
+
+function renderCobrosHistorial(){
+  if(!ST.cobroHistorial.length){document.getElementById('rc-historial').innerHTML='';return;}
+  document.getElementById('rc-historial').innerHTML=`<div class="sec-label">Cobros registrados en esta sesión</div>`+
+    ST.cobroHistorial.map(c=>`<div class="flow-row">
+      <span style="font-weight:600">Lote ${c.loteId} · ${c.cliente}</span>
+      <span style="color:var(--green);font-weight:600">${fU(c.monto)}</span>
+      <span style="background:var(--border);color:var(--ink2);padding:2px 6px;border-radius:3px;font-size:10px">${MEDIOS[c.medio]||c.medio}</span>
+      <span style="color:var(--ink3)">${c.moneda.toUpperCase()}</span>
+      <span style="color:var(--ink3)">${c.fecha}</span>
+      ${c.nota?`<span style="color:var(--ink3)">${c.nota}</span>`:''}
+    </div>`).join('');
+}
+
+// ─── SELECTS ──────────────────────────────────────────────────────────────────
+function poblarSelects(){
+  const opts=ST.lotes.map(l=>`<option value="${l.id}">L${l.id} · ${l.cliente} · ${l.producto.slice(0,30)} (disp: ${fU(capDisp(l))})</option>`).join('');
+  document.getElementById('tr-origen').innerHTML='<option value="">Seleccionar lote origen...</option>'+opts;
+  document.getElementById('tr-destino').innerHTML='<option value="">Seleccionar lote destino...</option>'+opts;
+  const optsN='<option value="">No — capital propio</option>'+ST.lotes.map(l=>`<option value="${l.id}">L${l.id} · ${l.cliente} · ${l.producto.slice(0,25)}</option>`).join('');
+  document.getElementById('n-origen-cap').innerHTML=optsN;
+  const optsRC=ST.lotes.map(l=>`<option value="${l.id}">L${l.id} · ${l.cliente} · ${l.producto.slice(0,30)} — por cobrar: ${fU(porCobrar(l))}</option>`).join('');
+  document.getElementById('rc-lote').innerHTML='<option value="">Seleccionar lote...</option>'+optsRC;
+}
+
+// ─── TRANSFERIR ───────────────────────────────────────────────────────────────
+function actualizarDisp(){
+  const id=parseInt(document.getElementById('tr-origen').value);
+  if(!id){document.getElementById('tr-disp-wrap').style.display='none';return;}
+  const l=ST.lotes.find(x=>x.id===id);if(!l)return;
+  document.getElementById('tr-disp-monto').textContent=fU(capDisp(l));
+  document.getElementById('tr-disp-cob').textContent=fU(l.cobrado);
+  document.getElementById('tr-disp-dado').textContent=fU(capDado(l));
+  document.getElementById('tr-disp-pct').textContent=fP(recupero(l));
+  document.getElementById('tr-disp-wrap').style.display='block';
+  validarTr();
+}
+
+function validarTr(){
+  const idO=parseInt(document.getElementById('tr-origen').value);
+  const idD=parseInt(document.getElementById('tr-destino').value);
+  const monto=parseFloat(document.getElementById('tr-monto').value)||0;
+  const vEl=document.getElementById('tr-val');const pEl=document.getElementById('tr-prev');
+  if(!idO||!idD||!monto){vEl.style.display='none';pEl.style.display='none';return;}
+  const lO=ST.lotes.find(x=>x.id===idO);const lD=ST.lotes.find(x=>x.id===idD);
+  if(!lO||!lD)return;
+  if(idO===idD){vEl.style.display='flex';document.getElementById('tr-val-msg').textContent='Origen y destino no pueden ser el mismo.';pEl.style.display='none';return;}
+  const disp=capDisp(lO);
+  if(monto>disp){vEl.style.display='flex';document.getElementById('tr-val-msg').textContent=`Supera el capital disponible de L${idO}: ${fU(disp)} libre.`;pEl.style.display='none';return;}
+  vEl.style.display='none';
+  document.getElementById('tr-prev-desde').textContent=`L${idO} · ${lO.cliente}`;
+  document.getElementById('tr-prev-monto').textContent=fU(monto);
+  document.getElementById('tr-prev-hacia').textContent=`L${idD} · ${lD.cliente}`;
+  document.getElementById('tr-prev-saldo').textContent=`Disponible restante en L${idO}: ${fU(disp-monto)}`;
+  pEl.style.display='block';
+}
+
+function ejecutarTr(){
+  const idO=parseInt(document.getElementById('tr-origen').value);
+  const idD=parseInt(document.getElementById('tr-destino').value);
+  const monto=parseFloat(document.getElementById('tr-monto').value)||0;
+  const fecha=document.getElementById('tr-fecha').value||hoy();
+  const nota=document.getElementById('tr-nota').value.trim();
+  if(!idO||!idD||!monto){alert('Completá origen, destino y monto.');return;}
+  if(idO===idD){alert('Origen y destino iguales.');return;}
+  const lO=ST.lotes.find(x=>x.id===idO);const lD=ST.lotes.find(x=>x.id===idD);
+  if(monto>capDisp(lO)){alert(`Supera el capital disponible de L${idO}.`);return;}
+  const tr={desde:idO,hacia:idD,monto,fecha,nota};
+  ST.transferencias.push(tr);
+  lO.trDadas.push({hacia:idD,monto,fecha,nota});
+  lD.trRecibidas.push({desde:idO,monto,fecha,nota});
+  renderAll();
+  saveState();
+  if(ONLINE_MODE){
+    saveToSupabase('transferencia',{
+      desde:idO, hacia:idD, monto:monto, fecha:fecha,
+      tipo:'directa', nota:nota, cobradoOrigen:lO.cobrado
+    });
+  }
+  const conf=document.getElementById('tr-conf');
+  document.getElementById('tr-conf-msg').textContent=`Transferencia de ${fU(monto)} de L${idO} → L${idD} registrada. Disponible en L${idO}: ${fU(capDisp(lO))}.`;
+  conf.style.display='flex';
+  document.getElementById('tr-monto').value='';document.getElementById('tr-nota').value='';
+  document.getElementById('tr-val').style.display='none';document.getElementById('tr-prev').style.display='none';
+  setTimeout(()=>conf.style.display='none',5000);
+}
+
+// ─── COBRAR ───────────────────────────────────────────────────────────────────
+function actualizarLoteInfo(){
+  const id=parseInt(document.getElementById('rc-lote').value);
+  if(!id){document.getElementById('rc-lote-info').style.display='none';return;}
+  const l=ST.lotes.find(x=>x.id===id);if(!l)return;
+  document.getElementById('rc-cliente-val').textContent=l.cliente;
+  document.getElementById('rc-venta-val').textContent=fU(l.venta);
+  document.getElementById('rc-cobrado-val').textContent=fU(l.cobrado);
+  document.getElementById('rc-deuda-val').textContent=fU(porCobrar(l));
+  document.getElementById('rc-lote-info').style.display='block';
+}
+
+function registrarCobro(){
+  const id=parseInt(document.getElementById('rc-lote').value);
+  const monto=parseFloat(document.getElementById('rc-monto').value)||0;
+  const moneda=document.getElementById('rc-moneda').value;
+  const medio=document.getElementById('rc-medio').value;
+  const fecha=document.getElementById('rc-fecha').value||hoy();
+  const nota=document.getElementById('rc-nota').value.trim();
+  if(!id||!monto){alert('Seleccioná un lote e ingresá el monto.');return;}
+  const l=ST.lotes.find(x=>x.id===id);if(!l)return;
+  const anteriorPC=porCobrar(l);
+  l.cobrado=Math.min(l.venta,l.cobrado+monto);
+  l.cobros.push({monto,moneda,medio,fecha,nota});
+  ST.cobroHistorial.push({loteId:id,cliente:l.cliente,monto,moneda,medio,fecha,nota});
+  renderAll();
+  actualizarLoteInfo();
+  saveState();
+  if(ONLINE_MODE){
+    saveToSupabase('cobro',{
+      loteId:id, monto:monto, moneda:moneda, medio:medio,
+      fecha:fecha, nota:nota, cobradoTotal:l.cobrado
+    });
+  }
+  const conf=document.getElementById('rc-conf');
+  document.getElementById('rc-conf-msg').textContent=`Cobro de ${fU(monto)} (${moneda.toUpperCase()}) via ${MEDIOS[medio]||medio} registrado en L${id} · ${l.cliente}. Saldo anterior: ${fU(anteriorPC)} → nuevo saldo: ${fU(porCobrar(l))}.`;
+  conf.style.display='flex';
+  document.getElementById('rc-monto').value='';document.getElementById('rc-nota').value='';
+  setTimeout(()=>conf.style.display='none',6000);
+}
+
+// ─── NUEVO LOTE ───────────────────────────────────────────────────────────────
+function toggleOrigenMonto(){
+  const v=document.getElementById('n-origen-cap').value;
+  document.getElementById('n-monto-orig-wrap').style.display=v?'block':'none';
+  document.getElementById('n-tipo-reinv-wrap').style.display=v?'block':'none';
+  document.getElementById('n-reinv-info').style.display='none';
+  if(v){
+    const lO=ST.lotes.find(x=>x.id===parseInt(v));
+    if(lO){
+      const disp=capDisp(lO);
+      document.getElementById('n-reinv-info').style.display='block';
+      document.getElementById('n-reinv-info').innerHTML=
+        '<div style="background:var(--blue-bg);border:1px solid #C5D8F5;border-radius:var(--r);padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--blue)">'+
+        'L'+lO.id+' · '+lO.cliente+' · '+lO.producto.slice(0,30)+
+        '<br><strong>Capital disponible: '+fU(disp)+'</strong> (cobrado: '+fU(lO.cobrado)+' — ya transferido: '+fU(lO.trDadas.reduce(function(a,t){return a+t.monto;},0))+')'+
+        '</div>';
+    }
+  }
+}
+
+function crearLote(){
+  const prod=document.getElementById('n-prod').value.trim();
+  const cliente=document.getElementById('n-cliente').value.trim();
+  const compra=parseFloat(document.getElementById('n-compra').value)||0;
+  const venta=parseFloat(document.getElementById('n-venta').value)||0;
+  const fecha=document.getElementById('n-fecha').value||hoy();
+  const obs=document.getElementById('n-obs').value.trim();
+  const origenId=parseInt(document.getElementById('n-origen-cap').value)||0;
+  const montoOrig=parseFloat(document.getElementById('n-monto-orig').value)||0;
+  if(!prod||!compra||!venta){alert('Completá producto, compra y venta.');return;}
+  const pctSelVal=document.getElementById('n-pct-lara')?document.getElementById('n-pct-lara').value:'50';
+  const pctLaraVal=pctSelVal==='custom'?(parseFloat(document.getElementById('n-pct-libre')?document.getElementById('n-pct-libre').value:50)||50):parseFloat(pctSelVal);
+  ST.seq++;
+  const newL={id:ST.seq,fecha:fecha.slice(5).replace('-','/'),cliente:cliente||'—',producto:prod,
+    compra,venta,cobrado:0,ganancia:venta-compra,obs,cobros:[],trRecibidas:[],trDadas:[],pctLara:pctLaraVal};
+  ST.lotes.push(newL);
+  if(origenId&&montoOrig>0){
+    const lO=ST.lotes.find(x=>x.id===origenId);
+    const tipoReinv=document.getElementById('n-tipo-reinv')?document.getElementById('n-tipo-reinv').value:'directa';
+    if(lO){
+      const real=Math.min(montoOrig,capDisp(lO));
+      if(real>0){
+        const notaTr=tipoReinv==='caja'
+          ? `Pasó por caja → L${ST.seq} (${prod})`
+          : `Directo a compra → L${ST.seq} (${prod})`;
+        const medioTr=tipoReinv==='caja'?'reinversion_caja':'reinversion_directa';
+        const tr={desde:origenId,hacia:ST.seq,monto:real,fecha,nota:notaTr,tipo:tipoReinv};
+        ST.transferencias.push(tr);
+        lO.trDadas.push({hacia:ST.seq,monto:real,fecha,nota:notaTr,tipo:tipoReinv});
+        newL.trRecibidas.push({desde:origenId,monto:real,fecha,nota:`← L${origenId} (${tipoReinv==='caja'?'vía caja':'directo'})`,tipo:tipoReinv});
+        // Siempre registrar como cobrado en el origen (de algún lado salió)
+        lO.cobrado=Math.min(lO.venta, lO.cobrado+real);
+        lO.cobros.push({monto:real,moneda:'usd',medio:medioTr,fecha:fecha,nota:notaTr});
+        ST.cobroHistorial.push({loteId:origenId,cliente:lO.cliente,monto:real,moneda:'usd',medio:medioTr,fecha:fecha,nota:notaTr});
+        // Si pasó por caja, sumarlo a liquidez temporal (se muestra en historial)
+        // Si fue directo, NO suma a caja — solo se registra el movimiento interno
+      }
+    }
+  }
+  renderAll();
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('lote_insert', newL); }
+  const conf=document.getElementById('n-conf');
+  document.getElementById('n-conf-msg').textContent=`Lote L${ST.seq} creado: ${prod} · ${cliente} · Compra ${fU(compra)} · Venta ${fU(venta)} · Make-up ${((venta-compra)/compra*100).toFixed(1)}%`;
+  conf.style.display='flex';
+  ['n-prod','n-cliente','n-compra','n-venta','n-obs','n-monto-orig'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  document.getElementById('n-origen-cap').value='';
+  document.getElementById('n-monto-orig-wrap').style.display='none';
+  document.getElementById('n-tipo-reinv-wrap').style.display='none';
+  document.getElementById('n-reinv-info').style.display='none';
+  setTimeout(()=>conf.style.display='none',6000);
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(el)el.classList.add('active');
+  if(name==='cobrar'||name==='transferir')poblarSelects();
+}
+
+function getCaja(){
+  const ids=['caja-efectivo','caja-santander','caja-galicia','caja-mp','caja-frances','caja-usdt','caja-otro'];
+  return ids.reduce(function(a,id){var el=document.getElementById(id);return a+(el?parseFloat(el.value)||0:0);},0);
+}
+
+function renderCuadre(){
+  var CAPITAL_INICIAL = 124900;
+  var totPC=ST.lotes.reduce(function(a,l){return a+porCobrar(l);},0);
+  var totGan=ST.lotes.reduce(function(a,l){return a+l.ganancia;},0);
+  var totC=ST.lotes.reduce(function(a,l){return a+l.compra;},0);
+  var totV=ST.lotes.reduce(function(a,l){return a+l.venta;},0);
+  var totCob=ST.lotes.reduce(function(a,l){return a+l.cobrado;},0);
+  var caja=getCaja();
+
+  // La ecuacion que tiene que cerrar:
+  // Caja + Por cobrar = Capital inicial + Ganancia de Lara
+  var totGanLaraC=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+  var totGanAtaxeC=ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0);
+  var objetivo = CAPITAL_INICIAL + totGanLaraC;
+  var tienes = caja + totPC;
+  var diferencia = tienes - objetivo;
+  var ok = Math.abs(diferencia) < 1;
+
+  var campos=[
+    {id:'caja-efectivo',label:'Caja (efectivo)'},
+    {id:'caja-santander',label:'Santander'},
+    {id:'caja-galicia',label:'Galicia'},
+    {id:'caja-mp',label:'MercadoPago'},
+    {id:'caja-frances',label:'Frances BBVA'},
+    {id:'caja-usdt',label:'USDT / Crypto'},
+    {id:'caja-otro',label:'Otro'}
+  ];
+  var detalleHtml='';
+  campos.forEach(function(c){
+    var el=document.getElementById(c.id);
+    var v=el?parseFloat(el.value)||0:0;
+    if(!v)return;
+    detalleHtml+='<div class="cuadre-row"><span style="color:var(--ink2)">'+c.label+'</span><span style="font-family:var(--mono);font-weight:500">'+fU(v)+'</span></div>';
+  });
+
+  var cajaColor=caja>0?'var(--blue)':'var(--ink3)';
+  var cajaBg=caja>0?'var(--blue-bg)':'var(--bg)';
+  var cajaBorder=caja>0?'#C5D8F5':'var(--border2)';
+  var cajaDetalle=detalleHtml
+    ? '<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px">'+detalleHtml+'</div>'
+    : '<div style="font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:3px">Completa los campos arriba</div>';
+
+  var pctCobrado=totV>0?Math.min(Math.round((totCob/totV)*100),100):0;
+
+  document.getElementById('cuadre-grid').innerHTML=
+    '<div style="background:var(--ink);border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:6px">Capital inicial</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:#fff">'+fU(CAPITAL_INICIAL)+'</div>'+
+      '<div style="font-size:11px;color:#666;font-family:var(--mono);margin-top:3px">El que pusiste vos</div>'+
+    '</div>'+
+    '<div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:6px">Ganancia total esperada</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--green)">'+fU(totGan)+'</div>'+
+      '<div style="font-size:11px;color:var(--green);font-family:var(--mono);margin-top:3px">Sobre todos los lotes</div>'+
+      '<div style="margin-top:6px;border-top:1px solid var(--green-light);padding-top:6px;display:flex;gap:10px">'+
+        '<span style="font-family:var(--mono);font-size:11px;color:#7c3aed">Lara: '+fU(ST.lotes.reduce(function(a,l){return a+ganLara(l);},0))+'</span>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">Ataxe: '+fU(ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0))+'</span>'+
+      '</div>'+
+    '</div>'+
+    (function(){
+      var totTr=ST.transitoItems?ST.transitoItems.reduce(function(a,t){return a+t.monto;},0):0;
+      if(!totTr)return '';
+      return '<div style="background:#FFF8E6;border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">En tránsito (machete)</div>'+
+        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(totTr)+'</div>'+
+        '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px">Cobrado pero no disponible aún</div>'+
+      '</div>';
+    })()+
+    '<div style="background:var(--purple-bg);border:1px solid #C5BFFA;border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:6px">Objetivo a recuperar (Lara)</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--purple)">'+fU(objetivo)+'</div>'+
+      '<div style="font-size:11px;color:var(--purple);font-family:var(--mono);margin-top:3px">Capital '+fU(CAPITAL_INICIAL)+' + Ganancia Lara '+fU(totGanLaraC)+'</div>'+
+      '<div style="font-size:10px;color:var(--purple);font-family:var(--mono);margin-top:2px;opacity:.7">Ganancia Ataxe aparte: '+fU(totGanAtaxeC)+'</div>'+
+    '</div>'+
+    '<div style="background:var(--red-bg);border:1px solid var(--red-light);border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:6px">Por cobrar (en calle)</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--red)">'+fU(totPC)+'</div>'+
+      '<div style="font-size:11px;color:var(--red);font-family:var(--mono);margin-top:3px;opacity:.7">Pendiente de clientes</div>'+
+    '</div>'+
+    '<div style="background:'+cajaBg+';border:1px solid '+cajaBorder+';border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:'+cajaColor+';margin-bottom:6px">Liquidez / Caja total</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:'+cajaColor+'">'+fU(caja)+'</div>'+
+      cajaDetalle+
+    '</div>'+
+    '<div style="background:var(--amber-bg);border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">Caja + Por cobrar</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(tienes)+'</div>'+
+      '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px;opacity:.9">Tiene que ser '+fU(objetivo)+'</div>'+
+    '</div>';
+
+  var diffColor=ok?'var(--green)':diferencia>0?'var(--blue)':'var(--red)';
+  var diffBg=ok?'var(--green-bg)':diferencia>0?'var(--blue-bg)':'var(--red-bg)';
+  var diffBorder=ok?'var(--green-light)':diferencia>0?'#C5D8F5':'var(--red-light)';
+  var diffIcon=ok?'✓':'⚠';
+  var diffMsg=ok
+    ? 'Cuadre perfecto — Capital inicial + Ganancia de Lara recuperados.'
+    : diferencia>0
+      ? 'Hay '+fU(diferencia)+' de excedente sobre el objetivo de Lara.'
+      : 'Faltan '+fU(Math.abs(diferencia))+' para recuperar Capital '+fU(CAPITAL_INICIAL)+' + Ganancia Lara '+fU(totGanLaraC)+'.';
+  var diffVal=ok?'OK':fU(Math.abs(diferencia));
+
+  document.getElementById('cuadre-resultado').innerHTML=
+    '<div style="background:'+diffBg+';border:2px solid '+diffBorder+';border-radius:var(--r2);padding:16px 20px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'+
+        '<div style="display:flex;align-items:center;gap:12px">'+
+          '<div style="font-size:22px">'+diffIcon+'</div>'+
+          '<div>'+
+            '<div style="font-size:13px;font-weight:700;color:'+diffColor+'">'+diffMsg+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:'+diffColor+';opacity:.8;margin-top:4px">'+
+              'Caja '+fU(caja)+' + Por cobrar '+fU(totPC)+' = '+fU(tienes)+
+              ' | Objetivo Lara: Capital '+fU(CAPITAL_INICIAL)+' + Gan.Lara '+fU(totGanLaraC)+' = '+fU(objetivo)+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-family:var(--mono);font-size:24px;font-weight:700;color:'+diffColor+'">'+diffVal+'</div>'+
+      '</div>'+
+    '</div>';
+}
+
+// ─── PERSISTENCIA localStorage ───────────────────────────────────────────────
+var LS_KEY='lara_dashboard_v1';
+
+function saveState(){
+  try{
+    // Solo guardamos los lotes extras (id > 26) y los cambios sobre los base
+    var toSave={
+      extraLotes: ST.lotes.filter(function(l){return l.id>26;}),
+      clienteNotas: ST.clienteNotas||{},
+      transitoItems: ST.transitoItems||[],
+      transitoItems: ST.transitoItems||[],
+      overrides:  ST.lotes.filter(function(l){return l.id<=26;}).map(function(l){
+        return{id:l.id,cliente:l.cliente,producto:l.producto,compra:l.compra,
+               venta:l.venta,cobrado:l.cobrado,ganancia:l.ganancia,fecha:l.fecha,obs:l.obs,pctLara:l.pctLara};
+      }),
+      transferencias: ST.transferencias,
+      seq: ST.seq
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(toSave));
+    var ind=document.getElementById('save-indicator');if(ind){ind.textContent='● Guardado';ind.style.color='#2ecc8a';}
+  }catch(e){console.warn('No se pudo guardar:',e);}
+}
+
+function loadState(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);
+    if(!raw)return;
+    var saved=JSON.parse(raw);
+    // Aplicar overrides a lotes base
+    if(saved.overrides){
+      saved.overrides.forEach(function(o){
+        var l=ST.lotes.find(function(x){return x.id===o.id;});
+        if(!l)return;
+        l.cliente=o.cliente;l.producto=o.producto;l.compra=o.compra;
+        l.venta=o.venta;l.cobrado=o.cobrado;l.ganancia=o.ganancia;
+        l.fecha=o.fecha;l.obs=o.obs;
+      });
+    }
+    // Agregar lotes extras
+    if(saved.extraLotes){
+      saved.extraLotes.forEach(function(l){
+        if(!ST.lotes.find(function(x){return x.id===l.id;})){
+          if(!l.cobros)l.cobros=[];
+          if(!l.trRecibidas)l.trRecibidas=[];
+          if(!l.trDadas)l.trDadas=[];
+          ST.lotes.push(l);
+        }
+      });
+    }
+    if(saved.transferencias)ST.transferencias=saved.transferencias;
+    if(saved.seq&&saved.seq>ST.seq)ST.seq=saved.seq;
+    if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
+    if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
+  }catch(e){console.warn('No se pudo cargar estado:',e);}
+}
+
+function clearState(){
+  var confirm1=prompt('ATENCION: Esto borra todos los lotes, cobros y transferencias que cargaste. Escribi RESET para confirmar:');
+  if(!confirm1||confirm1.trim().toUpperCase()!=='RESET'){
+    alert('Reset cancelado — no se borró nada.');
+    return;
+  }
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+function guardarNota(cliente, valor){
+  if(!ST.clienteNotas)ST.clienteNotas={};
+  ST.clienteNotas[cliente]=valor;
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('nota_cliente',{cliente:cliente,nota:valor}); }
+}
+
+function getPctLara(l){ return typeof l.pctLara==='number'?l.pctLara:50; }
+function ganLara(l){ return l.ganancia*(getPctLara(l)/100); }
+function ganAtaxe(l){ return l.ganancia*((100-getPctLara(l))/100); }
+
+function togglePctLibre(){
+  var v=document.getElementById('n-pct-lara').value;
+  document.getElementById('n-pct-libre-wrap').style.display=v==='custom'?'block':'none';
+}
+function toggleEditPctLibre(){
+  var v=document.getElementById('edit-pct-lara').value;
+  document.getElementById('edit-pct-libre-wrap').style.display=v==='custom'?'block':'none';
+}
+
+var _editId=null;
+function abrirModal(id){
+  var l=ST.lotes.find(function(x){return x.id===id;});
+  if(!l)return;
+  _editId=id;
+  document.getElementById('edit-modal-id').textContent='L'+id;
+  document.getElementById('edit-cliente').value=l.cliente;
+  document.getElementById('edit-producto').value=l.producto;
+  document.getElementById('edit-compra').value=l.compra;
+  document.getElementById('edit-venta').value=l.venta;
+  document.getElementById('edit-cobrado').value=l.cobrado;
+  // Convertir fecha del lote (DD/MM o DD/MM/YYYY) a YYYY-MM-DD para el input date
+  (function(){
+    var p=l.fecha.split('/');
+    var d=p[0]?p[0].padStart(2,'0'):'01';
+    var m=p[1]?p[1].padStart(2,'0'):'01';
+    var y=p[2]?p[2]:(p[1]&&parseInt(p[1])<=12?'2026':'2026');
+    // Si el año es de 2 digitos
+    if(y.length===2)y=(parseInt(y)<50?'20':'19')+y;
+    document.getElementById('edit-fecha').value=y+'-'+m+'-'+d;
+  })();
+  document.getElementById('edit-obs').value=l.obs||'';
+  var pctL=typeof l.pctLara==='number'?l.pctLara:50;
+  var pctSel=document.getElementById('edit-pct-lara');
+  if([0,50,100].indexOf(pctL)>=0){pctSel.value=String(pctL);}
+  else{pctSel.value='custom';document.getElementById('edit-pct-libre-wrap').style.display='block';document.getElementById('edit-pct-libre').value=pctL;}
+  toggleEditPctLibre();
+  document.getElementById('edit-modal-bg').style.display='flex';
+}
+function cerrarModal(){
+  document.getElementById('edit-modal-bg').style.display='none';
+  _editId=null;
+}
+function guardarEdicion(){
+  var l=ST.lotes.find(function(x){return x.id===_editId;});
+  if(!l)return;
+  l.cliente=document.getElementById('edit-cliente').value.trim()||l.cliente;
+  l.producto=document.getElementById('edit-producto').value.trim()||l.producto;
+  l.compra=parseFloat(document.getElementById('edit-compra').value)||l.compra;
+  l.venta=parseFloat(document.getElementById('edit-venta').value)||l.venta;
+  l.cobrado=parseFloat(document.getElementById('edit-cobrado').value)||0;
+  l.ganancia=l.venta-l.compra;
+  // Convertir YYYY-MM-DD a DD/MM/YYYY para guardar
+  (function(){
+    var v=document.getElementById('edit-fecha').value;
+    if(!v){return;}
+    var p=v.split('-');
+    if(p.length===3)l.fecha=p[2]+'/'+p[1]+'/'+p[0];
+    else l.fecha=v;
+  })();
+  l.obs=document.getElementById('edit-obs').value.trim();
+  var epctSel=document.getElementById('edit-pct-lara').value;
+  l.pctLara=epctSel==='custom'?(parseFloat(document.getElementById('edit-pct-libre').value)||50):parseFloat(epctSel);
+  cerrarModal();
+  renderAll();
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('lote_update', l); }
+}
+document.getElementById('edit-modal-bg').addEventListener('click',function(e){
+  if(e.target===this)cerrarModal();
+});
+
+// ─── EXPORTAR / IMPORTAR ─────────────────────────────────────────────────────
+function agregarTransito(){
+  var newItem={id:Date.now(),concepto:'',monto:0,nota:''};
+  ST.transitoItems.push(newItem);
+  renderTransito();
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('transito_insert', newItem); }
+}
+
+function eliminarTransito(id){
+  var deletedId=id;
+  ST.transitoItems=ST.transitoItems.filter(function(t){return t.id!==id;});
+  renderTransito();
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('transito_delete',{id:deletedId}); }
+}
+
+function actualizarTransito(id,campo,valor){
+  var item=ST.transitoItems.find(function(t){return t.id===id;});
+  if(!item)return;
+  if(campo==='monto')item.monto=parseFloat(valor)||0;
+  else item[campo]=valor;
+  renderTransitoTotal();
+  saveState();
+  if(ONLINE_MODE){ saveToSupabase('transito_update', item); }
+}
+
+function renderTransitoTotal(){
+  var total=ST.transitoItems.reduce(function(a,t){return a+t.monto;},0);
+  var totalEl=document.getElementById('transito-total');
+  var totalVal=document.getElementById('transito-total-val');
+  if(totalEl&&totalVal){
+    totalEl.style.display=total>0?'flex':'none';
+    totalVal.textContent=fU(total);
+  }
+  return total;
+}
+
+function renderTransito(){
+  var lista=document.getElementById('transito-lista');
+  if(!lista)return;
+  if(!ST.transitoItems.length){
+    lista.innerHTML='<div style="font-family:var(--mono);font-size:12px;color:var(--ink3);padding:8px 0">Sin items. Hace clic en &quot;+ Agregar item&quot; para registrar plata en transito.</div>';
+    renderTransitoTotal();
+    return;
+  }
+  // Build rows using DOM to avoid quote injection issues
+  var html='';
+  ST.transitoItems.forEach(function(t){
+    var tid=t.id;
+    html+='<div id="tr-row-'+tid+'" style="display:grid;grid-template-columns:1fr 130px 1fr 36px;gap:8px;margin-bottom:8px;align-items:center"></div>';
+  });
+  lista.innerHTML=html;
+  ST.transitoItems.forEach(function(t){
+    var row=document.getElementById('tr-row-'+t.id);
+    if(!row)return;
+    var inputStyle='background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:12px;padding:7px 10px;outline:none;width:100%;font-family:var(--font)';
+
+    var inpConcepto=document.createElement('input');
+    inpConcepto.value=t.concepto||'';
+    inpConcepto.placeholder='Concepto (ej: Santander financiera, cuenta de Mauro...)';
+    inpConcepto.style.cssText=inputStyle;
+    inpConcepto.addEventListener('input',function(){actualizarTransito(t.id,'concepto',this.value);});
+    row.appendChild(inpConcepto);
+
+    var inpMonto=document.createElement('input');
+    inpMonto.type='number';
+    inpMonto.value=t.monto||'';
+    inpMonto.placeholder='USD';
+    inpMonto.style.cssText=inputStyle+';font-family:var(--mono);font-weight:600';
+    inpMonto.addEventListener('input',function(){actualizarTransito(t.id,'monto',this.value);});
+    row.appendChild(inpMonto);
+
+    var inpNota=document.createElement('input');
+    inpNota.value=t.nota||'';
+    inpNota.placeholder='Nota adicional (opcional)';
+    inpNota.style.cssText=inputStyle;
+    inpNota.addEventListener('input',function(){actualizarTransito(t.id,'nota',this.value);});
+    row.appendChild(inpNota);
+
+    var btnElim=document.createElement('button');
+    btnElim.textContent='x';
+    btnElim.style.cssText='padding:7px 9px;border-radius:var(--r);border:1px solid var(--red-light);background:var(--red-bg);color:var(--red);cursor:pointer;font-size:13px;line-height:1';
+    btnElim.addEventListener('click',function(){eliminarTransito(t.id);});
+    row.appendChild(btnElim);
+  });
+  renderTransitoTotal();
+}
+
+function renderTacometro(){
+  var CAPITAL_INICIAL=124900;
+  var totGanLara=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+  var objetivo=CAPITAL_INICIAL+totGanLara;
+
+  var caja=getCaja();
+
+  // Transito: solo informativo, resta del por cobrar (ya fue cobrado al cliente)
+  var transito=ST.transitoItems?ST.transitoItems.reduce(function(a,t){return a+t.monto;},0):0;
+
+  // Progreso = caja / objetivo (transito no suma)
+  var pct=objetivo>0?Math.min(Math.round((caja/objetivo)*100),100):0;
+  var color=pct>=80?'#1A7A4A':pct>=50?'#B45309':'#C0392B';
+
+  // Arc SVG
+  var arcLen=408;
+  var arc=document.getElementById('taco-arc');
+  var pctTxt=document.getElementById('taco-pct');
+  var labelTxt=document.getElementById('taco-label');
+  if(arc){arc.setAttribute('stroke-dashoffset',arcLen-(arcLen*pct/100));arc.setAttribute('stroke',color);}
+  if(pctTxt){pctTxt.textContent=pct+'%';pctTxt.setAttribute('fill',color);}
+  if(labelTxt)labelTxt.textContent=pct>=100?'Objetivo alcanzado!':pct>=80?'Casi llegamos':'En progreso';
+
+  // Tres cards: caja | falta | objetivo
+  var elCaja=document.getElementById('taco-caja');
+  var elPc=document.getElementById('taco-pc');
+  var elObj=document.getElementById('taco-obj');
+  if(elCaja)elCaja.textContent=fU(caja);
+  if(elPc)elPc.textContent=fU(Math.max(0,objetivo-caja));
+  if(elObj)elObj.textContent=fU(objetivo);
+  var lCaja=document.getElementById('taco-caja-label');
+  var lPc=document.getElementById('taco-pc-label');
+  if(lCaja)lCaja.textContent='en caja ahora';
+  if(lPc)lPc.textContent='falta para el objetivo';
+
+  // Desglose
+  var des=document.getElementById('taco-desglose');
+  if(!des)return;
+  var pctCaja=objetivo>0?Math.round((caja/objetivo)*100):0;
+  var pctCap=objetivo>0?Math.round((CAPITAL_INICIAL/objetivo)*100):0;
+  var pctGan=objetivo>0?Math.round((totGanLara/objetivo)*100):0;
+  var pctRend=CAPITAL_INICIAL>0?Math.round((totGanLara/CAPITAL_INICIAL)*100):0;
+
+  // Tiempo transcurrido desde la primera compra
+  var fechasParsed=ST.lotes.map(function(l){
+    var p=l.fecha.split('/');
+    if(p.length<2)return null;
+    var d=parseInt(p[0]),m=parseInt(p[1]),y=p.length>=3?parseInt(p[2]):(new Date().getFullYear());
+    // Asumir 2025/2026 si el año no esta en la fecha original
+    // Los lotes viejos sin año: si mes >= 10 asumir 2025, si no 2026
+    if(p.length<3){y=m>=10?2025:2026;}
+    return new Date(y,m-1,d);
+  }).filter(function(d){return d&&!isNaN(d.getTime());});
+  var primerFecha=fechasParsed.length?new Date(Math.min.apply(null,fechasParsed)):null;
+  var hoyDate=new Date();
+  var diasTotales=primerFecha?Math.floor((hoyDate-primerFecha)/(1000*60*60*24)):0;
+  var mesesTotales=primerFecha?((hoyDate.getFullYear()-primerFecha.getFullYear())*12+(hoyDate.getMonth()-primerFecha.getMonth())):0;
+  var diasRestantes=primerFecha?Math.floor((hoyDate-(new Date(primerFecha.getFullYear(),primerFecha.getMonth()+mesesTotales,primerFecha.getDate())))/(1000*60*60*24)):0;
+  var tiempoStr=mesesTotales>0?(mesesTotales+' mes'+(mesesTotales>1?'es':'')+(diasRestantes>0?' y '+diasRestantes+' dia'+(diasRestantes>1?'s':''):'')):(diasTotales+' dias');
+  // Contar meses distintos con operaciones (igual que Gastos financieros)
+  var mesesConOps={};
+  ST.lotes.forEach(function(l){
+    if(ganLara(l)<=0)return;
+    var p=l.fecha.split('/');
+    if(p.length<2)return;
+    var m=p[1],y=p.length>=3?p[2]:'2026';
+    mesesConOps[y+'-'+m]=1;
+  });
+  var cantMesesConOps=Object.keys(mesesConOps).length||1;
+  var promedioMensual=Math.round(totGanLara/cantMesesConOps);
+
+  var html=
+    // OBJETIVO
+    '<div style="margin-bottom:16px;background:var(--bg);border-radius:var(--r);padding:12px 16px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px">Objetivo de Lara</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)">'+
+        '<div>'+
+          '<span style="font-size:13px;color:var(--ink2)">Capital inicial</span>'+
+          '<span style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-left:8px">('+pctCap+'% del total)</span>'+
+        '</div>'+
+        '<span style="font-family:var(--mono);font-size:13px;font-weight:600">'+fU(CAPITAL_INICIAL)+'</span>'+
+      '</div>'+
+      '<div style="padding:5px 0;border-bottom:1px solid var(--border)">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+          '<div>'+
+            '<span style="font-size:13px;color:#7c3aed">Su parte de ganancia</span>'+
+            '<span style="font-family:var(--mono);font-size:10px;color:#7c3aed;margin-left:8px;opacity:.8">('+pctGan+'% del total · rendimiento '+pctRend+'%)</span>'+
+          '</div>'+
+          '<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:#7c3aed">'+fU(totGanLara)+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:12px;flex-wrap:wrap">'+
+          '<span style="font-family:var(--mono);font-size:10px;color:var(--ink3)">⏱ Desde primera compra: '+tiempoStr+'</span>'+
+          '<span style="font-family:var(--mono);font-size:10px;color:#7c3aed">≈ '+fU(promedioMensual)+' / mes</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;padding:7px 0">'+
+        '<span style="font-size:14px;font-weight:800">Total a recuperar</span>'+
+        '<span style="font-family:var(--mono);font-size:16px;font-weight:800">'+fU(objetivo)+'</span>'+
+      '</div>'+
+    '</div>'+
+
+    // ESTADO
+    '<div style="margin-bottom:16px;background:var(--bg);border-radius:var(--r);padding:12px 16px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px">Estado actual</div>'+
+      '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'+
+        '<span style="font-size:13px;color:var(--green)">✓ En caja</span>'+
+        '<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--green)">'+fU(caja)+'</span>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'+
+        '<span style="font-size:13px;color:var(--red)">✗ Falta entrar a caja</span>'+
+        '<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--red)">'+fU(Math.max(0,objetivo-caja))+'</span>'+
+      '</div>'+
+      (transito>0?
+        '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'+
+          '<span style="font-size:12px;color:var(--amber)">◷ En tránsito (ya cobrado, informativo)</span>'+
+          '<span style="font-family:var(--mono);font-size:12px;color:var(--amber)">'+fU(transito)+'</span>'+
+        '</div>'
+      :'')+
+
+    '</div>'+
+
+    // BARRA DETALLADA
+    (function(){
+      var pctTr=objetivo>0?Math.round((transito/objetivo)*100):0;
+      var pctFalta=Math.max(0,100-pctCaja-pctTr);
+      var faltaReal=Math.max(0,objetivo-caja-transito);
+      return '<div style="margin-bottom:4px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:8px">Progreso detallado</div>'+
+        '<div style="height:18px;background:var(--border);border-radius:9px;overflow:hidden;display:flex;margin-bottom:12px">'+
+          '<div style="width:'+pctCaja+'%;background:var(--green);transition:width .8s ease"></div>'+
+          (transito>0?'<div style="width:'+pctTr+'%;background:var(--amber)"></div>':'')+
+          '<div style="flex:1;background:var(--red-light)"></div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+          '<div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--r);padding:8px 10px;text-align:center">'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">En caja</div>'+
+            '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--green)">'+fU(caja)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--green);opacity:.7;margin-top:1px">'+pctCaja+'%</div>'+
+          '</div>'+
+          '<div style="background:'+(transito>0?'var(--amber-bg)':'var(--bg)')+';border:1px solid '+(transito>0?'var(--amber-light)':'var(--border)')+';border-radius:var(--r);padding:8px 10px;text-align:center;opacity:'+(transito>0?'1':'0.4')+'">'+
+            '<div style="font-family:var(--mono);font-size:10px;color:'+(transito>0?'var(--amber)':'var(--ink3)')+';text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">En tránsito</div>'+
+            '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:'+(transito>0?'var(--amber)':'var(--ink3)')+'">'+fU(transito)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:'+(transito>0?'var(--amber)':'var(--ink3)')+';opacity:.7;margin-top:1px">'+pctTr+'%</div>'+
+          '</div>'+
+          '<div style="background:var(--red-bg);border:1px solid var(--red-light);border-radius:var(--r);padding:8px 10px;text-align:center">'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Falta cobrar</div>'+
+            '<div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--red)">'+fU(faltaReal)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--red);opacity:.7;margin-top:1px">'+pctFalta+'%</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    })();
+
+  des.innerHTML=html;
+
+  // Frase
+  var frase=document.getElementById('taco-frase');
+  if(frase){
+    if(pct>=100){
+      frase.innerHTML='<span style="color:var(--green);font-weight:700">Objetivo alcanzado.</span>';
+    } else {
+      frase.innerHTML=
+        'En caja: <strong style="color:var(--green)">'+fU(caja)+'</strong>. '+
+        'Falta: <strong style="color:var(--red)">'+fU(Math.max(0,objetivo-caja))+'</strong> para el objetivo de <strong>'+fU(objetivo)+'</strong>.'+
+        (transito>0?' ('+fU(transito)+' ya cobrado en tránsito, informativo)':'');
+    }
+  }
+}
+
+
+function exportarDatos(){
+  try{
+    var toSave={
+      version: 2,
+      fecha: new Date().toISOString(),
+      extraLotes: ST.lotes.filter(function(l){return l.id>26;}),
+      clienteNotas: ST.clienteNotas||{},
+      overrides: ST.lotes.filter(function(l){return l.id<=26;}).map(function(l){
+        return{id:l.id,cliente:l.cliente,producto:l.producto,compra:l.compra,
+               venta:l.venta,cobrado:l.cobrado,ganancia:l.ganancia,fecha:l.fecha,obs:l.obs,pctLara:l.pctLara,
+               cobros:l.cobros,trRecibidas:l.trRecibidas,trDadas:l.trDadas};
+      }),
+      transferencias: ST.transferencias,
+      cobroHistorial: ST.cobroHistorial||[],
+      seq: ST.seq
+    };
+    var json=JSON.stringify(toSave, null, 2);
+    var blob=new Blob([json],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    var fechaStr=new Date().toLocaleDateString('es-AR').replace(/\//g,'-');
+    a.href=url;
+    a.download='lara-dashboard-'+fechaStr+'.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    var ind=document.getElementById('save-indicator');
+    if(ind){ind.textContent='● Exportado';ind.style.color='#4a90e2';}
+    setTimeout(function(){if(ind){ind.textContent='● Guardado';ind.style.color='#2ecc8a';}},3000);
+  }catch(e){alert('Error al exportar: '+e.message);}
+}
+
+function importarDatos(input){
+  var file=input.files[0];
+  if(!file)return;
+  if(!confirm('Importar datos de "'+file.name+'"? Esto va a reemplazar los datos actuales del dashboard.')){input.value='';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var saved=JSON.parse(e.target.result);
+      // Aplicar overrides
+      if(saved.overrides){
+        saved.overrides.forEach(function(o){
+          var l=ST.lotes.find(function(x){return x.id===o.id;});
+          if(!l)return;
+          l.cliente=o.cliente;l.producto=o.producto;l.compra=o.compra;
+          l.venta=o.venta;l.cobrado=o.cobrado;l.ganancia=o.ganancia;
+          l.fecha=o.fecha;l.obs=o.obs;
+          if(typeof o.pctLara==='number')l.pctLara=o.pctLara;
+          if(typeof o.pctLara==='number')l.pctLara=o.pctLara;
+          if(o.cobros)l.cobros=o.cobros;
+          if(o.trRecibidas)l.trRecibidas=o.trRecibidas;
+          if(o.trDadas)l.trDadas=o.trDadas;
+        });
+      }
+      // Limpiar lotes extras y recargar
+      ST.lotes=ST.lotes.filter(function(l){return l.id<=26;});
+      if(saved.extraLotes){
+        saved.extraLotes.forEach(function(l){
+          if(!l.cobros)l.cobros=[];
+          if(!l.trRecibidas)l.trRecibidas=[];
+          if(!l.trDadas)l.trDadas=[];
+          ST.lotes.push(l);
+        });
+      }
+      if(saved.transferencias)ST.transferencias=saved.transferencias;
+      if(saved.cobroHistorial)ST.cobroHistorial=saved.cobroHistorial;
+      if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
+      if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
+      if(saved.seq&&saved.seq>ST.seq)ST.seq=saved.seq;
+      // Guardar en localStorage también
+      saveState();
+      renderAll();
+      var ind=document.getElementById('save-indicator');
+      if(ind){ind.textContent='● Importado correctamente';ind.style.color='#4a90e2';}
+      setTimeout(function(){if(ind){ind.textContent='● Guardado';ind.style.color='#2ecc8a';}},4000);
+      alert('Datos importados correctamente desde '+file.name);
+    }catch(err){
+      alert('Error al importar: '+err.message+'. Verificá que sea un archivo exportado por este sistema.');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function renderGastos(){
+  var el=document.getElementById('gastos-content');
+  if(!el)return;
+
+  // Agrupar ganancia de Lara por mes usando la fecha de cada lote
+  // Formato fecha en lotes: "DD/MM" o "DD/MM/AAAA" -> asumir año actual si no tiene
+  var meses={};
+  var MESES_NOMBRE=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  ST.lotes.forEach(function(l){
+    var ganL=ganLara(l);
+    if(ganL<=0)return;
+    // Parsear fecha
+    var partes=l.fecha.split('/');
+    var mes=partes.length>=2?parseInt(partes[1]):0;
+    var anio=partes.length>=3?parseInt(partes[2]):(new Date().getFullYear());
+    // Si viene en formato YYYY-MM-DD (por si acaso)
+    if(partes.length===1&&l.fecha.includes('-')){
+      var pp=l.fecha.split('-');
+      anio=parseInt(pp[0]);mes=parseInt(pp[1]);
+    }
+    if(!mes||mes<1||mes>12)return;
+    var key=anio+'-'+String(mes).padStart(2,'0');
+    if(!meses[key])meses[key]={mes:mes,anio:anio,ganLara:0,totalCompra:0,totalVenta:0,lotes:[]};
+    meses[key].ganLara+=ganL;
+    meses[key].totalCompra+=(l.compra||0);
+    meses[key].totalVenta+=(l.venta||0);
+    meses[key].lotes.push({id:l.id,cliente:l.cliente,producto:l.producto,ganLara:ganL,pctLara:getPctLara(l),ganTotal:l.ganancia,compra:l.compra,venta:l.venta,mu:l.compra>0?((l.venta-l.compra)/l.compra)*100:0});
+  });
+
+  var keys=Object.keys(meses).sort();
+  if(!keys.length){
+    el.innerHTML='<div class="alert al-info">Sin lotes con ganancia de Lara registrados todavia.</div>';
+    return;
+  }
+
+  var totGanLara=keys.reduce(function(a,k){return a+meses[k].ganLara;},0);
+
+  var html=
+    // Header resumen
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">'+
+      '<div style="background:var(--ink);border-radius:var(--r2);padding:16px 18px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#777;margin-bottom:6px">Total gasto financiero</div>'+
+        '<div style="font-size:24px;font-weight:700;font-family:var(--mono);color:#fff">'+fU(totGanLara)+'</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:#555;margin-top:3px">Ganancia de Lara acumulada</div>'+
+      '</div>'+
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px">Meses con operaciones</div>'+
+        '<div style="font-size:24px;font-weight:700;font-family:var(--mono)">'+keys.length+'</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:3px">Periodos registrados</div>'+
+      '</div>'+
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px">Promedio mensual</div>'+
+        '<div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(Math.round(totGanLara/keys.length))+'</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:3px">Por mes</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Tabla por mes
+    '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:12px">Detalle por mes</div>';
+
+  keys.forEach(function(k){
+    var m=meses[k];
+    var pctDelTotal=totGanLara>0?Math.round((m.ganLara/totGanLara)*100):0;
+    html+=
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px;margin-bottom:12px">'+
+        // Header mes
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">'+
+          '<div>'+
+            '<div style="font-size:16px;font-weight:700">'+MESES_NOMBRE[m.mes]+' '+m.anio+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">'+m.lotes.length+' lote'+(m.lotes.length>1?'s':'')+'</div>'+
+          '</div>'+
+          '<div style="text-align:right">'+
+            '<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--red)">'+fU(m.ganLara)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:2px">'+pctDelTotal+'% del total anual</div>'+
+          '</div>'+
+        '</div>'+
+        // Barra proporcional
+        '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:12px">'+
+          '<div style="width:'+pctDelTotal+'%;background:var(--red);border-radius:3px;transition:width .6s"></div>'+
+        '</div>'+
+        // Detalle lotes del mes
+        '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+          '<thead><tr>'+
+            '<th style="text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">Lote</th>'+
+            '<th style="text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">Cliente / Producto</th>'+
+            '<th style="text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">Gan. total</th>'+
+            '<th style="text-align:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">Make-up</th>'+
+            '<th style="text-align:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">% Lara</th>'+
+            '<th style="text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);padding:4px 8px;border-bottom:1px solid var(--border);font-weight:400">Gasto financiero</th>'+
+          '</tr></thead>'+
+          '<tbody>'+
+          m.lotes.map(function(lt){
+            return '<tr>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--ink3)">L'+lt.id+'</td>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border)"><span style="font-weight:600">'+lt.cliente+'</span><span style="color:var(--ink3);font-size:11px"> · '+lt.producto.slice(0,30)+'</span></td>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono)">'+fU(lt.ganTotal)+'</td>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);color:var(--purple)">'+lt.mu.toFixed(1)+'%</td>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);color:#7c3aed">'+lt.pctLara+'%</td>'+
+              '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);font-weight:700;color:var(--red)">'+fU(lt.ganLara)+'</td>'+
+            '</tr>';
+          }).join('')+
+          // Subtotal mes
+          '<tr style="background:var(--bg)">'+
+            '<td colspan="5" style="padding:7px 8px;font-weight:700;font-size:12px">Subtotal '+MESES_NOMBRE[m.mes]+' · Make-up prom. '+(m.totalCompra>0?((m.totalVenta-m.totalCompra)/m.totalCompra*100).toFixed(1):'0')+'%</td>'+
+            '<td style="padding:7px 8px;text-align:right;font-family:var(--mono);font-weight:800;color:var(--red);font-size:14px">'+fU(m.ganLara)+'</td>'+
+          '</tr>'+
+          '</tbody>'+
+        '</table>'+
+      '</div>';
+  });
+
+  // Total final
+  html+=
+    '<div style="background:var(--red-bg);border:2px solid var(--red-light);border-radius:var(--r2);padding:14px 20px;display:flex;justify-content:space-between;align-items:center">'+
+      '<div>'+
+        '<div style="font-size:14px;font-weight:700;color:var(--red)">Total gasto financiero acumulado</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--red);opacity:.8;margin-top:3px">Comision pagada a Lara por uso del capital</div>'+
+      '</div>'+
+      '<div style="font-family:var(--mono);font-size:28px;font-weight:800;color:var(--red)">'+fU(totGanLara)+'</div>'+
+    '</div>';
+
+  el.innerHTML=html;
+}
+
+function renderAll(){
+  renderCuadre();renderTransito();renderTacometro();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
+  renderLotesTbl();renderClientes();renderPorCobrar();renderFlujo();
+  renderTrHistorial();renderCobrosHistorial();poblarSelects();
+}
+
+// Init
+document.getElementById('h-fecha').textContent=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+loadState();
+renderCuadre();
+// Intentar sincronizar con Supabase al cargar
+syncDesdeSupabase().catch(function(){ setModoIndicador(false); });
+document.getElementById('tr-fecha').value=hoy();
+document.getElementById('rc-fecha').value=hoy();
+document.getElementById('n-fecha').value=hoy();
+renderAll();
+</script>
+</body>
+</html>
