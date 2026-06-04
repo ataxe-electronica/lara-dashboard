@@ -136,7 +136,7 @@ select option{background:var(--white)}
   <div class="nav-tab" onclick="showTab('transferir',this)">Transferir capital</div>
   <div class="nav-tab" onclick="showTab('flujo',this)">Flujo</div>
   <div class="nav-tab" onclick="showTab('nuevo',this)">+ Nuevo lote</div>
-  <div class="nav-tab" onclick="showTab('cobrar',this)">◉ Registrar cobro</div>
+  <div class="nav-tab" onclick="showTab('cobranzas',this)">↳ Cobranzas</div>
   <div class="nav-tab" onclick="showTab('gastos',this)">$ Gastos financieros</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button onclick="exportarDatos()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Exportar datos a JSON">↓ Exportar</button>
@@ -146,6 +146,11 @@ select option{background:var(--white)}
 </div>
 
 <div class="content">
+
+<!-- COBRANZAS -->
+<div id="tab-cobranzas" class="section">
+  <div id="cobranzas-content"></div>
+</div>
 
 <!-- GASTOS FINANCIEROS -->
 <div id="tab-gastos" class="section">
@@ -365,6 +370,7 @@ select option{background:var(--white)}
     <div class="form-grid">
       <div class="fg"><label>Fecha</label><input id="n-fecha" type="date"/></div>
       <div class="fg"><label>Observación</label><input id="n-obs" placeholder="Opcional"/></div>
+      <div class="fg"><label>Fecha de vencimiento del cobro <span style="font-weight:600;color:var(--red)">* dejar vacío si no tiene vencimiento</span></label><input id="n-fechavenc" type="date"/></div>
     </div>
     <div class="form-grid">
       <div class="fg"><label>¿Parte del capital viene de otro lote?</label>
@@ -405,54 +411,8 @@ select option{background:var(--white)}
   <div id="n-conf" style="display:none" class="alert al-ok">✓ <span id="n-conf-msg"></span></div>
 </div>
 
-<!-- REGISTRAR COBRO -->
-<div id="tab-cobrar" class="section">
-  <div class="card">
-    <div class="card-title">Registrar pago de cliente</div>
-    <div class="form-grid">
-      <div class="fg"><label>Lote</label>
-        <select id="rc-lote" onchange="actualizarLoteInfo()"></select>
-      </div>
-    </div>
-    <div id="rc-lote-info" style="display:none;margin-bottom:14px">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
-        <div class="stat-mini"><div class="sm-label">Cliente</div><div class="sm-value" id="rc-cliente-val" style="font-size:13px">—</div></div>
-        <div class="stat-mini"><div class="sm-label">Venta pactada</div><div class="sm-value" id="rc-venta-val">u$0</div></div>
-        <div class="stat-mini"><div class="sm-label">Ya cobrado</div><div class="sm-value hc-green" id="rc-cobrado-val">u$0</div></div>
-        <div class="stat-mini"><div class="sm-label">Por cobrar</div><div class="sm-value hc-red" id="rc-deuda-val">u$0</div></div>
-      </div>
-    </div>
-    <div class="form-grid">
-      <div class="fg"><label>Monto cobrado (USD)</label><input id="rc-monto" type="number" placeholder="0.00" step="0.01"/></div>
-      <div class="fg"><label>Moneda real</label>
-        <select id="rc-moneda">
-          <option value="usd">USD</option>
-          <option value="ars">ARS (pesos argentinos)</option>
-          <option value="usdt">USDT (crypto)</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-grid">
-      <div class="fg"><label>Medio de cobro</label>
-        <select id="rc-medio">
-          <option value="caja">Caja (efectivo)</option>
-          <option value="santander">Banco Santander</option>
-          <option value="galicia">Banco Galicia</option>
-          <option value="mercadopago">MercadoPago</option>
-          <option value="frances">Banco Francés (BBVA)</option>
-          <option value="usdt">USDT / Crypto</option>
-        </select>
-      </div>
-      <div class="fg"><label>Fecha</label><input id="rc-fecha" type="date"/></div>
-    </div>
-    <div class="form-grid">
-      <div class="fg"><label>Nota</label><input id="rc-nota" placeholder="Ref. transferencia, número de operación, etc."/></div>
-    </div>
-    <button class="btn btn-dark" onclick="registrarCobro()">◉ Registrar cobro</button>
-  </div>
-  <div id="rc-conf" style="display:none" class="alert al-ok">✓ <span id="rc-conf-msg"></span></div>
-  <div id="rc-historial" style="margin-top:8px"></div>
-</div>
+
+
 
 <!-- EDIT MODAL -->
 <div id="edit-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:1000;align-items:center;justify-content:center">
@@ -473,6 +433,7 @@ select option{background:var(--white)}
       <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Cobrado (USD)</label><input id="edit-cobrado" type="number" step="0.01" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
       <div><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Fecha</label><input id="edit-fecha" type="date" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/></div>
     </div>
+    <div style="margin-bottom:12px"><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Fecha de vencimiento del cobro</label><input id="edit-fechavenc" type="date" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none;width:100%"/><div style="font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:3px">Si tiene fecha → "A plazo" o "Vencido" automático. Dejar vacío para estado manual.</div></div>
     <div style="margin-bottom:12px"><label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Observación</label><input id="edit-obs" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--font);outline:none;width:100%"/></div>
     <div style="margin-bottom:20px">
       <label style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:block;margin-bottom:5px">Distribución de ganancia</label>
@@ -677,36 +638,38 @@ const hoy=()=>new Date().toISOString().slice(0,10);
 let ST={
   seq:26,
   lotes:[
-    {id:1, fecha:'19/03/2026', cliente:'ROSANIA',       producto:'TV',                                compra:10600, venta:11000, cobrado:11000, ganancia:400,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:2, fecha:'22/04/2026', cliente:'CAMIONCITO',    producto:'CELULARES',                         compra:15000, venta:15470, cobrado:9900,  ganancia:470,  obs:'IR AGARRANDO CUANDO SOBRE CAJA U$5100', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:3, fecha:'30/04/2026', cliente:'COMPUS TRINI X7',producto:'NOTEBOOK',                         compra:13049, venta:15509, cobrado:11100, ganancia:2460, obs:'4400 DEBE JUAN DA SILVA', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:4, fecha:'14/04/2026', cliente:'MARTIN',        producto:'TABLETS',                           compra:5945,  venta:6705,  cobrado:6705,  ganancia:760,  obs:'1400 RESTA STOCK TABLETS + GANANCIA DEL STOCK', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:5, fecha:'14/04/2026', cliente:'ROSANIA',       producto:'TABLETS',                           compra:5620,  venta:6380,  cobrado:6370,  ganancia:760,  obs:'TOTAL $1.600 FALTA COBRAR TABLETS (GANANCIA)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:6, fecha:'14/04/2026', cliente:'LAUREANO',      producto:'IPHONE X6',                         compra:2640,  venta:2850,  cobrado:2850,  ganancia:210,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:7, fecha:'15/04/2026', cliente:'ANDRIACH',      producto:'18 PS5',                            compra:9720,  venta:10890, cobrado:5800,  ganancia:1170, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:8, fecha:'15/04/2026', cliente:'ATAXE',         producto:'32 PS5',                            compra:17280, venta:18080, cobrado:15450, ganancia:800,  obs:'U$11.350 SE PUSO PARA TABLETS PELLEGRINI, U$2.500 + U$1.600 CAMARGO', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:9, fecha:'24/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7991 59 (TAB)',            compra:12333, venta:15045, cobrado:0,     ganancia:2712, obs:'1 MES DE PLAZO (FALTA PONER UN PEDACITO DE COMPRA U$1165)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:10,fecha:'20/04/2026', cliente:'LAUREANO',      producto:'30 A17',                            compra:3450,  venta:3570,  cobrado:3570,  ganancia:120,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:11,fecha:'19/02/2026', cliente:'ROSANIA',       producto:'CELULARES',                         compra:15633, venta:17342, cobrado:17342, ganancia:1709, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:12,fecha:'12/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004431 (30 A36)',          compra:8080,  venta:9480,  cobrado:9480,  ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:13,fecha:'02/12/2025',  cliente:'PELLEGRINI',    producto:'B-00001-00004376 (118 A17/15 A36)',  compra:29120, venta:34370, cobrado:34370, ganancia:5250, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:14,fecha:'26/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004497 (63 IPHONE 16)',    compra:42860, venta:45360, cobrado:45360, ganancia:2500, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:15,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004682 (13 S25 PLUS)',     compra:11085, venta:12065, cobrado:12065, ganancia:980,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:16,fecha:'15/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004606 (27 A26)',          compra:5590,  venta:6750,  cobrado:6750,  ganancia:1160, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:17,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004683 (67 A26)',          compra:13850, venta:16750, cobrado:2335,  ganancia:2900, obs:'FALTA QUE ENTRE LA PARTE DE NEWSAN (U$12.500)', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:18,fecha:'05/01/2026', cliente:'PEDAL',            producto:'JOYSTICK',                         compra:23500, venta:23500, cobrado:0,     ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:19,fecha:'05/01/2026', cliente:'PEDAL',         producto:'ATAXE',                           compra:22090, venta:22090, cobrado:10411, ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:20,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'VIVIANA G15',                       compra:10000, venta:10100, cobrado:0,     ganancia:100,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:21,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'IMPOSTAR A16',                      compra:14100, venta:14425, cobrado:14425, ganancia:325,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:22,fecha:'14/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7772 (TABL)',              compra:13500, venta:16095, cobrado:0,     ganancia:2595, obs:'PLAZO YA VENCIDO', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:23,fecha:'18/05/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8139 (TABL)',              compra:5200,  venta:6100,  cobrado:0,     ganancia:900,  obs:'PLAZO VENCE 18/06', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:24,fecha:'14/05/2026', cliente:'ATAXE',         producto:'WATCHONN (500)',                     compra:14500, venta:15900, cobrado:11700, ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:25,fecha:'21/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8018 5 S26',               compra:3775,  venta:4200,  cobrado:0,     ganancia:425,  obs:'PLAZO VENCE 24/05', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
-    {id:26,fecha:'21/05/2026', cliente:'ATAXE',         producto:'PS5 (7) + NINTENDO (3)',             compra:5300,  venta:5830,  cobrado:0,     ganancia:530,  obs:'', cobros:[], trRecibidas:[], trDadas:[], pctLara:50},
+    {id:1, fecha:'19/03/2026', cliente:'ROSANIA',       producto:'TV',                                compra:10600, venta:11000, cobrado:11000, ganancia:400,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:2, fecha:'22/04/2026', cliente:'CAMIONCITO',    producto:'CELULARES',                         compra:15000, venta:15470, cobrado:9900,  ganancia:470,  obs:'IR AGARRANDO CUANDO SOBRE CAJA U$5100', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:3, fecha:'30/04/2026', cliente:'COMPUS TRINI X7',producto:'NOTEBOOK',                         compra:13049, venta:15509, cobrado:11100, ganancia:2460, obs:'4400 DEBE JUAN DA SILVA', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:4, fecha:'14/04/2026', cliente:'MARTIN',        producto:'TABLETS',                           compra:5945,  venta:6705,  cobrado:6705,  ganancia:760,  obs:'1400 RESTA STOCK TABLETS + GANANCIA DEL STOCK', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:5, fecha:'14/04/2026', cliente:'ROSANIA',       producto:'TABLETS',                           compra:5620,  venta:6380,  cobrado:6370,  ganancia:760,  obs:'TOTAL $1.600 FALTA COBRAR TABLETS (GANANCIA)', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:6, fecha:'14/04/2026', cliente:'LAUREANO',      producto:'IPHONE X6',                         compra:2640,  venta:2850,  cobrado:2850,  ganancia:210,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:7, fecha:'15/04/2026', cliente:'ANDRIACH',      producto:'18 PS5',                            compra:9720,  venta:10890, cobrado:5800,  ganancia:1170, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:8, fecha:'15/04/2026', cliente:'ATAXE',         producto:'32 PS5',                            compra:17280, venta:18080, cobrado:15450, ganancia:800,  obs:'U$11.350 SE PUSO PARA TABLETS PELLEGRINI, U$2.500 + U$1.600 CAMARGO', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:9, fecha:'24/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7991 59 (TAB)',            compra:12333, venta:15045, cobrado:0,     ganancia:2712, obs:'1 MES DE PLAZO (FALTA PONER UN PEDACITO DE COMPRA U$1165)', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:10,fecha:'20/04/2026', cliente:'LAUREANO',      producto:'30 A17',                            compra:3450,  venta:3570,  cobrado:3570,  ganancia:120,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:11,fecha:'19/02/2026', cliente:'ROSANIA',       producto:'CELULARES',                         compra:15633, venta:17342, cobrado:17342, ganancia:1709, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:12,fecha:'12/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004431 (30 A36)',          compra:8080,  venta:9480,  cobrado:9480,  ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:13,fecha:'02/12/2025',  cliente:'PELLEGRINI',    producto:'B-00001-00004376 (118 A17/15 A36)',  compra:29120, venta:34370, cobrado:34370, ganancia:5250, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:14,fecha:'26/12/2025', cliente:'PELLEGRINI',    producto:'B-00001-00004497 (63 IPHONE 16)',    compra:42860, venta:45360, cobrado:45360, ganancia:2500, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:15,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004682 (13 S25 PLUS)',     compra:11085, venta:12065, cobrado:12065, ganancia:980,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:16,fecha:'15/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004606 (27 A26)',          compra:5590,  venta:6750,  cobrado:6750,  ganancia:1160, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:17,fecha:'23/01/2026', cliente:'PELLEGRINI',    producto:'B-00001-00004683 (67 A26)',          compra:13850, venta:16750, cobrado:2335,  ganancia:2900, obs:'FALTA QUE ENTRE LA PARTE DE NEWSAN (U$12.500)', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:18,fecha:'05/01/2026', cliente:'PEDAL',            producto:'JOYSTICK',                         compra:23500, venta:23500, cobrado:0,     ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:19,fecha:'05/01/2026', cliente:'PEDAL',         producto:'ATAXE',                           compra:22090, venta:22090, cobrado:10411, ganancia:0,    obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:20,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'VIVIANA G15',                       compra:10000, venta:10100, cobrado:0,     ganancia:100,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:21,fecha:'10/04/2026', cliente:'ROSANIA',       producto:'IMPOSTAR A16',                      compra:14100, venta:14425, cobrado:14425, ganancia:325,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:22,fecha:'14/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°7772 (TABL)',              compra:13500, venta:16095, cobrado:0,     ganancia:2595, obs:'PLAZO YA VENCIDO', fechaVenc:'2026-04-14', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:23,fecha:'18/05/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8139 (TABL)',              compra:5200,  venta:6100,  cobrado:0,     ganancia:900,  obs:'PLAZO VENCE 18/06', fechaVenc:'2026-06-18', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:24,fecha:'14/05/2026', cliente:'ATAXE',         producto:'WATCHONN (500)',                     compra:14500, venta:15900, cobrado:11700, ganancia:1400, obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:25,fecha:'21/04/2026', cliente:'PELLEGRINI',    producto:'Presup. N°8018 5 S26',               compra:3775,  venta:4200,  cobrado:0,     ganancia:425,  obs:'PLAZO VENCE 24/05', fechaVenc:'2026-05-24', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
+    {id:26,fecha:'21/05/2026', cliente:'ATAXE',         producto:'PS5 (7) + NINTENDO (3)',             compra:5300,  venta:5830,  cobrado:0,     ganancia:530,  obs:'', cobros:[], trRecibidas:[], trDadas:[], fechaVenc:'', pctLara:50},
   ],
   transferencias:[],
   transitoItems:[],
   clienteNotas:{},
+  cobranzasHistorial:[],
+  saldoCobranzas:0,
   cobroHistorial:[]
 };
 
@@ -719,17 +682,24 @@ const capRecibido=l=>l.trRecibidas.reduce((a,t)=>a+t.monto,0);
 const capDisp=l=>Math.max(0,l.cobrado-capDado(l));
 
 function tieneVencimiento(l){
+  if(l.fechaVenc)return true;
   if(!l.obs)return false;
   const o=l.obs.toUpperCase();
-  return o.includes('VENCE')||o.includes('PLAZO')||o.includes('MES DE PLAZO')||o.includes('DIA')||/\d{1,2}\/\d{2}/.test(l.obs);
+  return o.includes('VENCE')||o.includes('PLAZO')||o.includes('MES DE PLAZO')||o.includes('DIA');
+}
+function estaVencido(l){
+  if(l.fechaVenc){
+    return new Date(l.fechaVenc)<new Date(new Date().toISOString().slice(0,10));
+  }
+  if(l.obs&&l.obs.toUpperCase().includes('VENCIDO'))return true;
+  return false;
 }
 function estadoBadge(l){
   const pc=porCobrar(l);
-  if(l.obs&&l.obs.toUpperCase().includes('VENCIDO'))return'<span class="badge b-danger">Vencido</span>';
   if(pc===0&&l.cobrado>0)return'<span class="badge b-ok">Cobrado</span>';
-  if(l.cobrado===0&&l.venta>0&&tieneVencimiento(l))return'<span class="badge b-info">A plazo</span>';
+  if(estaVencido(l)&&pc>0)return'<span class="badge b-danger">Vencido</span>';
+  if(tieneVencimiento(l)&&pc>0)return'<span class="badge b-info">A plazo</span>';
   if(l.cobrado===0&&l.venta>0)return'<span class="badge b-danger">Sin cobrar</span>';
-  if(pc>0&&tieneVencimiento(l))return'<span class="badge b-info">A plazo</span>';
   if(pc>0)return'<span class="badge b-warn">Parcial</span>';
   return'<span class="badge b-gray">—</span>';
 }
@@ -865,8 +835,10 @@ function renderLotesTbl(){
 function renderClientes(){
   const data={};
   ST.lotes.forEach(l=>{
-    if(!data[l.cliente])data[l.cliente]={lotes:0,compra:0,venta:0,cobrado:0,ganancia:0,pc:0};
+    if(!data[l.cliente])data[l.cliente]={lotes:0,compra:0,venta:0,cobrado:0,ganancia:0,pc:0,lotesDeuda:[],totCompra:0,totVenta:0};
     const d=data[l.cliente];d.lotes++;d.compra+=l.compra;d.venta+=l.venta;d.cobrado+=l.cobrado;d.ganancia+=l.ganancia;d.pc+=porCobrar(l);
+    if(porCobrar(l)>0)d.lotesDeuda.push({id:l.id,monto:porCobrar(l),producto:l.producto,obs:l.obs||''});
+    d.totCompra+=l.compra;d.totVenta+=l.venta;
   });
   if(!ST.clienteNotas)ST.clienteNotas={};
   document.getElementById('cl-grid').innerHTML=Object.entries(data).sort((a,b)=>b[1].venta-a[1].venta).map(([nombre,d])=>{
@@ -876,13 +848,17 @@ function renderClientes(){
     <div class="cl-card">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
         <div><div style="font-size:15px;font-weight:700">${nombre}</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:1px">${d.lotes} lote${d.lotes>1?'s':''}</div></div>
-        ${d.pc>0?`<span class="badge b-danger">${fU(d.pc)} debe</span>`:`<span class="badge b-ok">Al dia</span>`}
+        <div style="text-align:right">
+          ${d.pc>0?`<span class="badge b-danger">${fU(d.pc)} debe</span>`:`<span class="badge b-ok">Al dia</span>`}
+          ${d.pc>0&&d.lotesDeuda.length?`<div style="margin-top:4px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px">${d.lotesDeuda.map(ld=>`<span title="L${ld.id} · ${ld.producto}${ld.obs?' · '+ld.obs:''}" style="font-family:var(--mono);font-size:9px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-light);padding:1px 6px;border-radius:3px;cursor:help">L${ld.id}: ${fU(ld.monto)}</span>`).join('')}</div>`:``}
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0">
         <div class="stat-mini"><div class="sm-label">Compra</div><div class="sm-value">${fU(d.compra)}</div></div>
         <div class="stat-mini"><div class="sm-label">Venta</div><div class="sm-value">${fU(d.venta)}</div></div>
         <div class="stat-mini"><div class="sm-label">Cobrado</div><div class="sm-value" style="color:var(--green)">${fU(d.cobrado)}</div></div>
         <div class="stat-mini"><div class="sm-label">Ganancia</div><div class="sm-value" style="color:var(--green)">${fU(d.ganancia)}</div></div>
+        <div class="stat-mini" style="grid-column:1/-1;background:var(--purple-bg);border:1px solid #C5BFFA"><div class="sm-label" style="color:var(--purple)">Make-up promedio</div><div class="sm-value" style="color:var(--purple)">${d.totCompra>0?((d.totVenta-d.totCompra)/d.totCompra*100).toFixed(1)+'%':'—'}<span style="font-family:var(--font);font-size:11px;color:var(--purple);opacity:.7;margin-left:6px">${d.totCompra>0?'ganancia '+fU(d.totVenta-d.totCompra)+' sobre '+fU(d.totCompra)+' invertido':''}</span></div></div>
       </div>
       ${d.pc>0?`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px"><span>Recupero</span><span>${fP(d.venta>0?(d.cobrado/d.venta)*100:0)}</span></div><div class="pb" style="height:5px"><div class="pf pf-a" style="width:${d.venta>0?Math.min((d.cobrado/d.venta)*100,100):0}%"></div></div></div>`:''}
       <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px">
@@ -982,8 +958,9 @@ function renderTrHistorial(){
 }
 
 function renderCobrosHistorial(){
-  if(!ST.cobroHistorial.length){document.getElementById('rc-historial').innerHTML='';return;}
-  document.getElementById('rc-historial').innerHTML=`<div class="sec-label">Cobros registrados en esta sesión</div>`+
+  var rcHist=document.getElementById('rc-historial');if(!rcHist)return;
+  if(!ST.cobroHistorial.length){rcHist.innerHTML='';return;}
+  rcHist.innerHTML=`<div class="sec-label">Cobros registrados en esta sesión</div>`+
     ST.cobroHistorial.map(c=>`<div class="flow-row">
       <span style="font-weight:600">Lote ${c.loteId} · ${c.cliente}</span>
       <span style="color:var(--green);font-weight:600">${fU(c.monto)}</span>
@@ -1002,7 +979,7 @@ function poblarSelects(){
   const optsN='<option value="">No — capital propio</option>'+ST.lotes.map(l=>`<option value="${l.id}">L${l.id} · ${l.cliente} · ${l.producto.slice(0,25)}</option>`).join('');
   document.getElementById('n-origen-cap').innerHTML=optsN;
   const optsRC=ST.lotes.map(l=>`<option value="${l.id}">L${l.id} · ${l.cliente} · ${l.producto.slice(0,30)} — por cobrar: ${fU(porCobrar(l))}</option>`).join('');
-  document.getElementById('rc-lote').innerHTML='<option value="">Seleccionar lote...</option>'+optsRC;
+  var rcLote=document.getElementById('rc-lote');if(rcLote)rcLote.innerHTML='<option value="">Seleccionar lote...</option>'+optsRC;
 }
 
 // ─── TRANSFERIR ───────────────────────────────────────────────────────────────
@@ -1104,7 +1081,8 @@ function registrarCobro(){
   const conf=document.getElementById('rc-conf');
   document.getElementById('rc-conf-msg').textContent=`Cobro de ${fU(monto)} (${moneda.toUpperCase()}) via ${MEDIOS[medio]||medio} registrado en L${id} · ${l.cliente}. Saldo anterior: ${fU(anteriorPC)} → nuevo saldo: ${fU(porCobrar(l))}.`;
   conf.style.display='flex';
-  document.getElementById('rc-monto').value='';document.getElementById('rc-nota').value='';
+  var rcMo=document.getElementById('rc-monto');if(rcMo)rcMo.value='';
+  var rcNo=document.getElementById('rc-nota');if(rcNo)rcNo.value='';
   setTimeout(()=>conf.style.display='none',6000);
 }
 
@@ -1141,8 +1119,9 @@ function crearLote(){
   const pctSelVal=document.getElementById('n-pct-lara')?document.getElementById('n-pct-lara').value:'50';
   const pctLaraVal=pctSelVal==='custom'?(parseFloat(document.getElementById('n-pct-libre')?document.getElementById('n-pct-libre').value:50)||50):parseFloat(pctSelVal);
   ST.seq++;
+  const fvEl=document.getElementById('n-fechavenc');
   const newL={id:ST.seq,fecha:fecha.slice(5).replace('-','/'),cliente:cliente||'—',producto:prod,
-    compra,venta,cobrado:0,ganancia:venta-compra,obs,cobros:[],trRecibidas:[],trDadas:[],pctLara:pctLaraVal};
+    compra,venta,cobrado:0,ganancia:venta-compra,obs,cobros:[],trRecibidas:[],trDadas:[],fechaVenc:fvEl?fvEl.value:'',pctLara:pctLaraVal};
   ST.lotes.push(newL);
   if(origenId&&montoOrig>0){
     const lO=ST.lotes.find(x=>x.id===origenId);
@@ -1323,6 +1302,10 @@ function saveState(){
     var toSave={
       extraLotes: ST.lotes.filter(function(l){return l.id>26;}),
       clienteNotas: ST.clienteNotas||{},
+      cobranzasHistorial: ST.cobranzasHistorial||[],
+      saldoCobranzas: ST.saldoCobranzas||0,
+      cobranzasHistorial: ST.cobranzasHistorial||[],
+      saldoCobranzas: ST.saldoCobranzas||0,
       transitoItems: ST.transitoItems||[],
       transitoItems: ST.transitoItems||[],
       overrides:  ST.lotes.filter(function(l){return l.id<=26;}).map(function(l){
@@ -1366,6 +1349,8 @@ function loadState(){
     if(saved.transferencias)ST.transferencias=saved.transferencias;
     if(saved.seq&&saved.seq>ST.seq)ST.seq=saved.seq;
     if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
+    if(saved.cobranzasHistorial)ST.cobranzasHistorial=saved.cobranzasHistorial;
+    if(typeof saved.saldoCobranzas==='number')ST.saldoCobranzas=saved.saldoCobranzas;
     if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
   }catch(e){console.warn('No se pudo cargar estado:',e);}
 }
@@ -1422,6 +1407,7 @@ function abrirModal(id){
     document.getElementById('edit-fecha').value=y+'-'+m+'-'+d;
   })();
   document.getElementById('edit-obs').value=l.obs||'';
+  var editFv=document.getElementById('edit-fechavenc');if(editFv)editFv.value=l.fechaVenc||'';
   var pctL=typeof l.pctLara==='number'?l.pctLara:50;
   var pctSel=document.getElementById('edit-pct-lara');
   if([0,50,100].indexOf(pctL)>=0){pctSel.value=String(pctL);}
@@ -1451,6 +1437,7 @@ function guardarEdicion(){
     else l.fecha=v;
   })();
   l.obs=document.getElementById('edit-obs').value.trim();
+  var efv=document.getElementById('edit-fechavenc');l.fechaVenc=efv?efv.value:'';
   var epctSel=document.getElementById('edit-pct-lara').value;
   l.pctLara=epctSel==='custom'?(parseFloat(document.getElementById('edit-pct-libre').value)||50):parseFloat(epctSel);
   cerrarModal();
@@ -1730,7 +1717,7 @@ function exportarDatos(){
       clienteNotas: ST.clienteNotas||{},
       overrides: ST.lotes.filter(function(l){return l.id<=26;}).map(function(l){
         return{id:l.id,cliente:l.cliente,producto:l.producto,compra:l.compra,
-               venta:l.venta,cobrado:l.cobrado,ganancia:l.ganancia,fecha:l.fecha,obs:l.obs,pctLara:l.pctLara,
+               venta:l.venta,cobrado:l.cobrado,ganancia:l.ganancia,fecha:l.fecha,obs:l.obs,pctLara:l.pctLara,fechaVenc:l.fechaVenc||'',fechaVenc:l.fechaVenc||'',
                cobros:l.cobros,trRecibidas:l.trRecibidas,trDadas:l.trDadas};
       }),
       transferencias: ST.transferencias,
@@ -1769,6 +1756,8 @@ function importarDatos(input){
           l.venta=o.venta;l.cobrado=o.cobrado;l.ganancia=o.ganancia;
           l.fecha=o.fecha;l.obs=o.obs;
           if(typeof o.pctLara==='number')l.pctLara=o.pctLara;
+          if(o.fechaVenc!==undefined)l.fechaVenc=o.fechaVenc;
+          else if(o.fechaVenc===undefined)l.fechaVenc='';
           if(typeof o.pctLara==='number')l.pctLara=o.pctLara;
           if(o.cobros)l.cobros=o.cobros;
           if(o.trRecibidas)l.trRecibidas=o.trRecibidas;
@@ -1788,6 +1777,8 @@ function importarDatos(input){
       if(saved.transferencias)ST.transferencias=saved.transferencias;
       if(saved.cobroHistorial)ST.cobroHistorial=saved.cobroHistorial;
       if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
+      if(saved.cobranzasHistorial)ST.cobranzasHistorial=saved.cobranzasHistorial;
+      if(typeof saved.saldoCobranzas==='number')ST.saldoCobranzas=saved.saldoCobranzas;
       if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
       if(saved.seq&&saved.seq>ST.seq)ST.seq=saved.seq;
       // Guardar en localStorage también
@@ -1803,6 +1794,308 @@ function importarDatos(input){
     input.value='';
   };
   reader.readAsText(file);
+}
+
+// ─── COBRANZAS ──────────────────────────────────────────────────────────────
+
+function renderCobranzas(){
+  var el=document.getElementById('cobranzas-content');
+  if(!el)return;
+
+  var saldoDisp=ST.saldoCobranzas||0;
+  var historial=ST.cobranzasHistorial||[];
+
+  var html=
+    // Header con saldo disponible
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">'+
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px">'+
+        '<div class="hc-label">Total cobranzas registradas</div>'+
+        '<div class="hc-value hc-green" id="cob-total-val">u$0</div>'+
+      '</div>'+
+      '<div style="background:'+(saldoDisp>0?'var(--blue-bg)':'var(--white)')+';border:1px solid '+(saldoDisp>0?'#C5D8F5':'var(--border)')+';border-radius:var(--r2);padding:18px 20px">'+
+        '<div class="hc-label">Saldo disponible sin aplicar</div>'+
+        '<div class="hc-value" style="color:'+(saldoDisp>0?'var(--blue)':'var(--ink3)')+'">'+fU(saldoDisp)+'</div>'+
+        '<div class="hc-sub">Listo para aplicar a un lote</div>'+
+      '</div>'+
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px">'+
+        '<div class="hc-label">Cobranzas registradas</div>'+
+        '<div class="hc-value mv-white">'+historial.length+'</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Formulario nueva cobranza
+    '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:24px">'+
+      '<div style="font-size:14px;font-weight:700;margin-bottom:16px">Registrar cobranza</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px">'+
+        '<div class="fg"><label>Importe (USD)</label><input id="ncob-monto" type="number" placeholder="0.00" step="0.01" oninput="actualizarExcedente()"/></div>'+
+        '<div class="fg"><label>Fecha</label><input id="ncob-fecha" type="date"/></div>'+
+        '<div class="fg"><label>Medio de cobro</label>'+
+          '<select id="ncob-medio">'+
+            '<option value="caja">Caja (efectivo)</option>'+
+            '<option value="santander">Banco Santander</option>'+
+            '<option value="galicia">Banco Galicia</option>'+
+            '<option value="mercadopago">MercadoPago</option>'+
+            '<option value="frances">Banco Francés (BBVA)</option>'+
+            '<option value="usdt">USDT / Crypto</option>'+
+          '</select>'+
+        '</div>'+
+        '<div class="fg"><label>Moneda</label>'+
+          '<select id="ncob-moneda">'+
+            '<option value="usd">USD</option>'+
+            '<option value="ars">ARS (pesos)</option>'+
+            '<option value="usdt">USDT</option>'+
+          '</select>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+        '<div class="fg"><label>Descripción</label><input id="ncob-desc" placeholder="Ej: Pago Pellegrini lote 9 y 17"/></div>'+
+        '<div class="fg"><label>Lote principal al que aplica</label>'+
+          '<select id="ncob-lote" onchange="actualizarExcedente()"><option value="">Sin lote específico (saldo libre)</option></select>'+
+        '</div>'+
+      '</div>'+
+      '<div id="ncob-excedente-wrap" style="display:none;margin-bottom:12px">'+
+        '<div style="background:var(--blue-bg);border:1px solid #C5D8F5;border-radius:var(--r);padding:12px 16px">'+
+          '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-bottom:8px">'+
+            '⚠ El importe supera lo que debe ese lote. ¿Qué hacés con el excedente?'+
+          '</div>'+
+          '<div style="font-size:13px;color:var(--blue);margin-bottom:8px">'+
+            'Excedente: <strong id="ncob-excedente-val">u$0</strong>'+
+          '</div>'+
+          '<div style="display:flex;gap:10px;flex-wrap:wrap">'+
+            '<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;text-transform:none;letter-spacing:0">'+
+              '<input type="radio" name="ncob-excedente-destino" value="saldo" checked onclick="toggleExcedenteDestino()"/> Dejar como saldo disponible'+
+            '</label>'+
+            '<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;text-transform:none;letter-spacing:0">'+
+              '<input type="radio" name="ncob-excedente-destino" value="otro_lote" onclick="toggleExcedenteDestino()"/> Aplicar a otro lote'+
+            '</label>'+
+          '</div>'+
+          '<div id="ncob-otro-lote-wrap" style="display:none;margin-top:10px">'+
+            '<div class="fg"><label>Seleccionar otro lote</label>'+
+              '<select id="ncob-otro-lote"><option value="">Seleccionar lote...</option></select>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<button class="btn btn-dark" onclick="registrarCobranza()">↳ Registrar cobranza</button>'+
+    '</div>'+
+
+    // Saldo disponible - aplicar a lote
+    (saldoDisp>0?
+      '<div style="background:var(--blue-bg);border:2px solid #C5D8F5;border-radius:var(--r2);padding:16px 20px;margin-bottom:24px">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">'+
+          '<div>'+
+            '<div style="font-size:14px;font-weight:700;color:var(--blue)">Saldo disponible: '+fU(saldoDisp)+'</div>'+
+            '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);opacity:.8;margin-top:2px">Aplicalo a un lote cuando quieras</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">'+
+          '<div class="fg" style="flex:1;min-width:180px"><label>Aplicar a lote</label>'+
+            '<select id="saldo-aplicar-lote"><option value="">Seleccionar lote...</option></select>'+
+          '</div>'+
+          '<div class="fg" style="min-width:120px"><label>Monto a aplicar</label>'+
+            '<input id="saldo-aplicar-monto" type="number" placeholder="'+saldoDisp+'" value="'+saldoDisp+'" step="0.01"/>'+
+          '</div>'+
+          '<button class="btn btn-dark" onclick="aplicarSaldo()" style="margin-bottom:0">Aplicar saldo</button>'+
+        '</div>'+
+      '</div>'
+    :'')+
+
+    // Historial
+    '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:12px">Historial de cobranzas</div>'+
+    (historial.length?
+      '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden">'+
+        '<div style="overflow-x:auto">'+
+        '<table><thead><tr>'+
+          '<th>Fecha</th><th>Descripción</th><th>Importe</th><th>Moneda</th><th>Medio</th><th>Lote principal</th><th>Aplicaciones</th><th></th>'+
+        '</tr></thead><tbody>'+
+        historial.slice().reverse().map(function(c){
+          var aplicStr=c.aplicaciones&&c.aplicaciones.length
+            ?c.aplicaciones.map(function(a){return'<span class="badge b-info" style="margin:1px">L'+a.loteId+': '+fU(a.monto)+'</span>';}).join('')
+            :'<span class="badge b-gray">Sin aplicar</span>';
+          var anulada=c.anulada||false;
+          var strikeStyle=anulada?'text-decoration:line-through;opacity:.45;':'';
+          var rowBg=anulada?'background:#fafaf8;':'';
+          return'<tr style="'+rowBg+'">'+
+            '<td class="num" style="color:var(--ink3);'+strikeStyle+'">'+c.fecha+'</td>'+
+            '<td style="font-size:12px;'+strikeStyle+'">'+c.descripcion+(anulada?' <span class="badge b-danger" style="font-size:9px">ANULADA</span>':'')+'</td>'+
+            '<td class="ng" style="'+strikeStyle+'">'+fU(c.monto)+'</td>'+
+            '<td><span class="badge '+(c.moneda==='ars'?'b-warn':c.moneda==='usdt'?'b-ok':'b-info')+'" style="'+strikeStyle+'">'+c.moneda.toUpperCase()+'</span></td>'+
+            '<td><span class="badge b-gray" style="'+strikeStyle+'">'+(MEDIOS[c.medio]||c.medio)+'</span></td>'+
+            '<td class="num" style="color:var(--ink3);'+strikeStyle+'">'+(c.lotePrincipal?'L'+c.lotePrincipal:'—')+'</td>'+
+            '<td>'+aplicStr+'</td>'+
+            '<td>'+(!anulada
+              ?'<button onclick="anularCobranza('+c.id+')" style="padding:3px 10px;border-radius:var(--r);border:1px solid var(--red-light);background:var(--red-bg);color:var(--red);cursor:pointer;font-size:11px;font-family:var(--mono)">✕ Anular</button>'
+              :'<button onclick="restaurarCobranza('+c.id+')" style="padding:3px 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg);color:var(--ink3);cursor:pointer;font-size:11px;font-family:var(--mono)">↩ Restaurar</button>'
+            )+'</td>'+
+          '</tr>';
+        }).join('')+
+        '</tbody></table></div></div>'
+    :'<div class="alert al-info">Todavía no hay cobranzas registradas.</div>');
+
+  // Calcular total
+  var totalCob=historial.reduce(function(a,c){return a+c.monto;},0);
+  el.innerHTML=html;
+  var tv=document.getElementById('cob-total-val');
+  if(tv)tv.textContent=fU(totalCob);
+
+  // Poblar selects de lotes
+  var optsLotes='<option value="">Sin lote específico (saldo libre)</option>'+
+    ST.lotes.filter(function(l){return porCobrar(l)>0;}).map(function(l){return'<option value="'+l.id+'">L'+l.id+' · '+l.cliente+' · '+l.producto.slice(0,25)+' (debe: '+fU(porCobrar(l))+')</option>';}).join('');
+  var s1=document.getElementById('ncob-lote');if(s1)s1.innerHTML=optsLotes;
+  
+  var optsOtro='<option value="">Seleccionar lote...</option>'+
+    ST.lotes.map(function(l){return'<option value="'+l.id+'">L'+l.id+' · '+l.cliente+' · '+l.producto.slice(0,25)+'</option>';}).join('');
+  var s2=document.getElementById('ncob-otro-lote');if(s2)s2.innerHTML=optsOtro;
+  var s3=document.getElementById('saldo-aplicar-lote');
+  if(s3)s3.innerHTML='<option value="">Seleccionar lote...</option>'+
+    ST.lotes.filter(function(l){return porCobrar(l)>0;}).map(function(l){
+      return'<option value="'+l.id+'">L'+l.id+' · '+l.cliente+' · '+l.producto.slice(0,25)+' (debe: '+fU(porCobrar(l))+')</option>';
+    }).join('');
+}
+
+function actualizarExcedente(){
+  var monto=parseFloat(document.getElementById('ncob-monto')?document.getElementById('ncob-monto').value:0)||0;
+  var loteId=parseInt(document.getElementById('ncob-lote')?document.getElementById('ncob-lote').value:0)||0;
+  var wrap=document.getElementById('ncob-excedente-wrap');
+  if(!wrap)return;
+  if(!loteId||!monto){wrap.style.display='none';return;}
+  var l=ST.lotes.find(function(x){return x.id===loteId;});
+  if(!l){wrap.style.display='none';return;}
+  var debe=porCobrar(l);
+  var excedente=monto-debe;
+  if(excedente>0){
+    wrap.style.display='block';
+    var ev=document.getElementById('ncob-excedente-val');
+    if(ev)ev.textContent=fU(excedente);
+  } else {
+    wrap.style.display='none';
+  }
+}
+
+function toggleExcedenteDestino(){
+  var radios=document.querySelectorAll('input[name="ncob-excedente-destino"]');
+  var val='saldo';
+  radios.forEach(function(r){if(r.checked)val=r.value;});
+  var w=document.getElementById('ncob-otro-lote-wrap');
+  if(w)w.style.display=val==='otro_lote'?'block':'none';
+}
+
+function registrarCobranza(){
+  var monto=parseFloat(document.getElementById('ncob-monto')?document.getElementById('ncob-monto').value:0)||0;
+  var fecha=document.getElementById('ncob-fecha')?document.getElementById('ncob-fecha').value:hoy();
+  var medio=document.getElementById('ncob-medio')?document.getElementById('ncob-medio').value:'caja';
+  var moneda=document.getElementById('ncob-moneda')?document.getElementById('ncob-moneda').value:'usd';
+  var desc=document.getElementById('ncob-desc')?document.getElementById('ncob-desc').value.trim():'';
+  var loteId=parseInt(document.getElementById('ncob-lote')?document.getElementById('ncob-lote').value:0)||0;
+  if(!monto){alert('Ingresá el importe.');return;}
+  if(!fecha){alert('Ingresá la fecha.');return;}
+
+  if(!ST.cobranzasHistorial)ST.cobranzasHistorial=[];
+  if(!ST.saldoCobranzas)ST.saldoCobranzas=0;
+
+  var aplicaciones=[];
+  var restante=monto;
+
+  if(loteId){
+    var l=ST.lotes.find(function(x){return x.id===loteId;});
+    if(l){
+      var debe=porCobrar(l);
+      var aplicar=Math.min(restante,debe);
+      // Aplicar al lote principal
+      l.cobrado=Math.min(l.venta,l.cobrado+aplicar);
+      l.cobros.push({monto:aplicar,moneda:moneda,medio:medio,fecha:fecha,nota:desc});
+      aplicaciones.push({loteId:loteId,monto:aplicar});
+      restante-=aplicar;
+      if(ONLINE_MODE){saveToSupabase('cobro',{loteId:loteId,monto:aplicar,moneda:moneda,medio:medio,fecha:fecha,nota:desc,cobradoTotal:l.cobrado});}
+    }
+  }
+
+  // Si hay excedente
+  if(restante>0){
+    var radios=document.querySelectorAll('input[name="ncob-excedente-destino"]');
+    var destino='saldo';
+    radios.forEach(function(r){if(r.checked)destino=r.value;});
+    if(destino==='otro_lote'){
+      var otroId=parseInt(document.getElementById('ncob-otro-lote')?document.getElementById('ncob-otro-lote').value:0)||0;
+      if(otroId){
+        var lo=ST.lotes.find(function(x){return x.id===otroId;});
+        if(lo){
+          var aplicarOtro=Math.min(restante,porCobrar(lo));
+          lo.cobrado=Math.min(lo.venta,lo.cobrado+aplicarOtro);
+          lo.cobros.push({monto:aplicarOtro,moneda:moneda,medio:medio,fecha:fecha,nota:desc+' (excedente)'});
+          aplicaciones.push({loteId:otroId,monto:aplicarOtro});
+          restante-=aplicarOtro;
+          if(ONLINE_MODE){saveToSupabase('cobro',{loteId:otroId,monto:aplicarOtro,moneda:moneda,medio:medio,fecha:fecha,nota:desc+' (excedente)',cobradoTotal:lo.cobrado});}
+        }
+      }
+    }
+    // Lo que sobre, va a saldo disponible
+    if(restante>0) ST.saldoCobranzas+=restante;
+  }
+
+  ST.cobranzasHistorial.push({
+    id:Date.now(),fecha:fecha,descripcion:desc||'Sin descripción',
+    monto:monto,moneda:moneda,medio:medio,
+    lotePrincipal:loteId||null,aplicaciones:aplicaciones,
+    saldoGenerado:restante>0?restante:0
+  });
+
+  saveState();
+  renderAll();
+  // Limpiar form
+  ['ncob-monto','ncob-desc'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+  var nd=document.getElementById('ncob-lote');if(nd)nd.value='';
+  var nw=document.getElementById('ncob-excedente-wrap');if(nw)nw.style.display='none';
+
+  // Sugerir actualizar caja
+  var nombresMedio={caja:'Caja (efectivo)',santander:'Banco Santander',galicia:'Banco Galicia',mercadopago:'MercadoPago',frances:'Banco Francés (BBVA)',usdt:'USDT / Crypto'};
+  var camposMedio={caja:'caja-efectivo',santander:'caja-santander',galicia:'caja-galicia',mercadopago:'caja-mp',frances:'caja-frances',usdt:'caja-usdt'};
+  var nombreMedio=nombresMedio[medio]||medio;
+  var campoCaja=camposMedio[medio];
+  var confDiv=document.getElementById('ncob-conf');
+  if(!confDiv){
+    confDiv=document.createElement('div');
+    confDiv.id='ncob-conf';
+    var btn=document.querySelector('[onclick="registrarCobranza()"]');
+    if(btn&&btn.parentNode)btn.parentNode.insertBefore(confDiv,btn.nextSibling);
+  }
+  var saldoActual=campoCaja?(parseFloat((document.getElementById(campoCaja)||{}).value)||0):0;
+  confDiv.style.display='block';
+  confDiv.className='alert al-ok';
+  confDiv.innerHTML='✓ Cobranza de '+fU(monto)+' registrada via <strong>'+nombreMedio+'</strong>. '+
+    (campoCaja?'<br><span style="font-family:var(--mono);font-size:11px">Saldo actual en '+nombreMedio+': <strong>'+fU(saldoActual)+'</strong> — '+
+    '<button id="btn-ir-caja" data-campo="'+campoCaja+'" data-nombre="'+nombreMedio+'" '+
+    'style="background:none;border:none;color:var(--green);text-decoration:underline;cursor:pointer;font-family:var(--mono);font-size:11px;padding:0">'+
+    'Actualizar saldo →</button></span>':'');
+  var btnCaja=document.getElementById('btn-ir-caja');
+  if(btnCaja){
+    btnCaja.addEventListener('click',function(){
+      var campo=this.getAttribute('data-campo');
+      showTab('resumen',document.querySelectorAll('.nav-tab')[1]);
+      setTimeout(function(){
+        var el=document.getElementById(campo);
+        if(el){el.focus();el.style.borderColor='var(--ink)';el.scrollIntoView({behavior:'smooth',block:'center'});}
+      },300);
+    });
+  }
+    setTimeout(function(){if(confDiv)confDiv.style.display='none';},8000);
+}
+
+function aplicarSaldo(){
+  var loteId=parseInt(document.getElementById('saldo-aplicar-lote')?document.getElementById('saldo-aplicar-lote').value:0)||0;
+  var monto=parseFloat(document.getElementById('saldo-aplicar-monto')?document.getElementById('saldo-aplicar-monto').value:0)||0;
+  if(!loteId||!monto){alert('Seleccioná un lote e ingresá el monto.');return;}
+  if(!ST.saldoCobranzas||monto>ST.saldoCobranzas){alert('Monto supera el saldo disponible ('+fU(ST.saldoCobranzas)+').');return;}
+  var l=ST.lotes.find(function(x){return x.id===loteId;});
+  if(!l)return;
+  var aplicar=Math.min(monto,porCobrar(l));
+  l.cobrado=Math.min(l.venta,l.cobrado+aplicar);
+  l.cobros.push({monto:aplicar,moneda:'usd',medio:'saldo_cobranza',fecha:hoy(),nota:'Aplicado desde saldo disponible'});
+  ST.saldoCobranzas-=aplicar;
+  if(ONLINE_MODE){saveToSupabase('cobro',{loteId:loteId,monto:aplicar,moneda:'usd',medio:'saldo_cobranza',fecha:hoy(),nota:'Aplicado desde saldo disponible',cobradoTotal:l.cobrado});}
+  saveState();
+  renderAll();
+  alert('Aplicado '+fU(aplicar)+' al lote L'+loteId+'. Saldo restante: '+fU(ST.saldoCobranzas));
 }
 
 function renderGastos(){
@@ -1930,8 +2223,54 @@ function renderGastos(){
   el.innerHTML=html;
 }
 
+function anularCobranza(id){
+  if(!confirm('¿Anular esta cobranza? Se va a restar del cobrado de los lotes afectados y el saldo vuelve a quedar pendiente.'))return;
+  var c=ST.cobranzasHistorial.find(function(x){return x.id===id;});
+  if(!c||c.anulada)return;
+  // Revertir cobros en los lotes afectados
+  if(c.aplicaciones&&c.aplicaciones.length){
+    c.aplicaciones.forEach(function(a){
+      var l=ST.lotes.find(function(x){return x.id===a.loteId;});
+      if(l){
+        l.cobrado=Math.max(0,l.cobrado-a.monto);
+        if(ONLINE_MODE)saveToSupabase('lote_update',l);
+      }
+    });
+  }
+  // Si habia saldo libre generado, restarlo
+  if(c.saldoGenerado&&c.saldoGenerado>0){
+    ST.saldoCobranzas=Math.max(0,(ST.saldoCobranzas||0)-c.saldoGenerado);
+  }
+  c.anulada=true;
+  saveState();
+  renderAll();
+}
+
+function restaurarCobranza(id){
+  if(!confirm('¿Restaurar esta cobranza? Se va a volver a sumar al cobrado de los lotes afectados.'))return;
+  var c=ST.cobranzasHistorial.find(function(x){return x.id===id;});
+  if(!c||!c.anulada)return;
+  // Re-aplicar cobros en los lotes
+  if(c.aplicaciones&&c.aplicaciones.length){
+    c.aplicaciones.forEach(function(a){
+      var l=ST.lotes.find(function(x){return x.id===a.loteId;});
+      if(l){
+        l.cobrado=Math.min(l.venta,l.cobrado+a.monto);
+        if(ONLINE_MODE)saveToSupabase('lote_update',l);
+      }
+    });
+  }
+  // Restaurar saldo libre si habia
+  if(c.saldoGenerado&&c.saldoGenerado>0){
+    ST.saldoCobranzas=(ST.saldoCobranzas||0)+c.saldoGenerado;
+  }
+  c.anulada=false;
+  saveState();
+  renderAll();
+}
+
 function renderAll(){
-  renderCuadre();renderTransito();renderTacometro();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
+  renderCuadre();renderTransito();renderTacometro();renderCobranzas();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
   renderLotesTbl();renderClientes();renderPorCobrar();renderFlujo();
   renderTrHistorial();renderCobrosHistorial();poblarSelects();
 }
@@ -1943,7 +2282,7 @@ renderCuadre();
 // Intentar sincronizar con Supabase al cargar
 syncDesdeSupabase().catch(function(){ setModoIndicador(false); });
 document.getElementById('tr-fecha').value=hoy();
-document.getElementById('rc-fecha').value=hoy();
+var ncobFecha=document.getElementById('ncob-fecha');if(ncobFecha)ncobFecha.value=hoy();
 document.getElementById('n-fecha').value=hoy();
 renderAll();
 </script>
