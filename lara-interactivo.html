@@ -1183,12 +1183,30 @@ function renderCuadre(){
   var totCob=ST.lotes.reduce(function(a,l){return a+l.cobrado;},0);
   var caja=getCaja();
 
-  // La ecuacion que tiene que cerrar:
-  // Caja + Por cobrar = Capital inicial + Ganancia de Lara
+  // Separar el "por cobrar" en parte de Lara y parte de Ataxe
+  // Del por cobrar de cada lote:
+  //   - capital pendiente (100% Lara)
+  //   - ganancia pendiente * pctLara (Lara)
+  //   - ganancia pendiente * (1-pctLara) (Ataxe)
+  var pcLaraCuadre=ST.lotes.reduce(function(a,l){
+    var pc=porCobrar(l);
+    if(pc<=0||l.venta<=0)return a;
+    var prop=pc/l.venta;
+    return a+(l.compra*prop)+(l.ganancia*prop*(getPctLara(l)/100));
+  },0);
+  var pcAtaxeCuadre=ST.lotes.reduce(function(a,l){
+    var pc=porCobrar(l);
+    if(pc<=0||l.venta<=0)return a;
+    var prop=pc/l.venta;
+    return a+(l.ganancia*prop*((100-getPctLara(l))/100));
+  },0);
+
   var totGanLaraC=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
   var totGanAtaxeC=ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0);
   var objetivo = CAPITAL_INICIAL + totGanLaraC;
-  var tienes = caja + totPC;
+
+  // El cuadre usa solo la parte de Lara del por cobrar
+  var tienes = caja + pcLaraCuadre;
   var diferencia = tienes - objetivo;
   var ok = Math.abs(diferencia) < 1;
 
@@ -1249,9 +1267,10 @@ function renderCuadre(){
       '<div style="font-size:10px;color:var(--purple);font-family:var(--mono);margin-top:2px;opacity:.7">Ganancia Ataxe aparte: '+fU(totGanAtaxeC)+'</div>'+
     '</div>'+
     '<div style="background:var(--red-bg);border:1px solid var(--red-light);border-radius:var(--r);padding:12px 14px">'+
-      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:6px">Por cobrar (en calle)</div>'+
-      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--red)">'+fU(totPC)+'</div>'+
-      '<div style="font-size:11px;color:var(--red);font-family:var(--mono);margin-top:3px;opacity:.7">Pendiente de clientes</div>'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:6px">Por cobrar (parte de Lara)</div>'+
+      '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--red)">'+fU(pcLaraCuadre)+'</div>'+
+      '<div style="font-size:11px;color:var(--red);font-family:var(--mono);margin-top:3px;opacity:.8">Capital + ganancia de Lara en calle</div>'+
+      '<div style="font-size:10px;color:var(--red);font-family:var(--mono);margin-top:2px;opacity:.6">Ataxe aparte: '+fU(pcAtaxeCuadre)+'</div>'+
     '</div>'+
     '<div style="background:'+cajaBg+';border:1px solid '+cajaBorder+';border-radius:var(--r);padding:12px 14px">'+
       '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:'+cajaColor+';margin-bottom:6px">Liquidez / Caja total</div>'+
@@ -1259,15 +1278,38 @@ function renderCuadre(){
       cajaDetalle+
     '</div>'+
     '<div style="background:var(--amber-bg);border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
-      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">Caja + Por cobrar</div>'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">Caja + Por cobrar (Lara)</div>'+
       '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(tienes)+'</div>'+
       '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px;opacity:.9">Tiene que ser '+fU(objetivo)+'</div>'+
-    '</div>';
+      '<div style="font-size:10px;color:var(--amber);font-family:var(--mono);margin-top:2px;opacity:.7">Ganancia Ataxe en calle (aparte): '+fU(pcAtaxeCuadre)+'</div>'+
+    '</div>'+
+    (function(){
+      var totTr=ST.transitoItems?ST.transitoItems.reduce(function(a,t){return a+t.monto;},0):0;
+      if(!totTr)return '';
+      return '<div style="background:#FFF8E6;border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">En tránsito (machete)</div>'+
+        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(totTr)+'</div>'+
+        '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px">Cobrado pero no disponible aún</div>'+
+      '</div>';
+    })()+
+    (function(){
+      var totGanObj=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+      var totGanAtObj=ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0);
+      return '<div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--r);padding:12px 14px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:6px">Ganancia total esperada</div>'+
+        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--green)">'+fU(totGanObj+totGanAtObj)+'</div>'+
+        '<div style="font-size:11px;color:var(--green);font-family:var(--mono);margin-top:3px">Capital invertido: '+fU(totC)+'</div>'+
+        '<div style="margin-top:6px;border-top:1px solid var(--green-light);padding-top:6px;display:flex;gap:10px">'+
+          '<span style="font-family:var(--mono);font-size:11px;color:#7c3aed">Lara: '+fU(totGanObj)+'</span>'+
+          '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">Ataxe: '+fU(totGanAtObj)+'</span>'+
+        '</div>'+
+      '</div>';
+    })();
 
+  var diffIcon=ok?'✓':'⚠';
   var diffColor=ok?'var(--green)':diferencia>0?'var(--blue)':'var(--red)';
   var diffBg=ok?'var(--green-bg)':diferencia>0?'var(--blue-bg)':'var(--red-bg)';
   var diffBorder=ok?'var(--green-light)':diferencia>0?'#C5D8F5':'var(--red-light)';
-  var diffIcon=ok?'✓':'⚠';
   var diffMsg=ok
     ? 'Cuadre perfecto — Capital inicial + Ganancia de Lara recuperados.'
     : diferencia>0
@@ -1283,7 +1325,7 @@ function renderCuadre(){
           '<div>'+
             '<div style="font-size:13px;font-weight:700;color:'+diffColor+'">'+diffMsg+'</div>'+
             '<div style="font-family:var(--mono);font-size:11px;color:'+diffColor+';opacity:.8;margin-top:4px">'+
-              'Caja '+fU(caja)+' + Por cobrar '+fU(totPC)+' = '+fU(tienes)+
+              'Caja '+fU(caja)+' + Por cobrar Lara '+fU(pcLaraCuadre)+' = '+fU(tienes)+
               ' | Objetivo Lara: Capital '+fU(CAPITAL_INICIAL)+' + Gan.Lara '+fU(totGanLaraC)+' = '+fU(objetivo)+
             '</div>'+
           '</div>'+
