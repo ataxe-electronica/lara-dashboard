@@ -209,6 +209,82 @@ select option{background:var(--white)}
     <!-- Frase estado -->
     <div id="taco-frase" style="text-align:center;font-size:13px;color:var(--ink3);font-family:var(--mono);padding:8px"></div>
 
+  <!-- GANANCIAS COBRADAS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px" id="gan-gauges">
+
+    <!-- Lara -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;margin-bottom:12px">Ganancia cobrada · Lara</div>
+      <svg viewBox="0 0 220 130" style="width:100%;max-width:260px">
+        <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#E2E0D8" stroke-width="16" stroke-linecap="round"/>
+        <path id="gan-lara-arc" d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#7c3aed" stroke-width="16" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283" style="transition:stroke-dashoffset .8s ease"/>
+        <text id="gan-lara-pct" x="110" y="100" text-anchor="middle" font-size="32" font-weight="800" font-family="DM Mono,monospace" fill="#7c3aed">0%</text>
+      </svg>
+      <div style="margin-top:4px">
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:#7c3aed" id="gan-lara-cobrada">u$0</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">de <span id="gan-lara-total">u$0</span> total</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">Pendiente: <span id="gan-lara-pend" style="color:#7c3aed">u$0</span></div>
+      </div>
+    </div>
+
+    <!-- Ataxe -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;text-align:center">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:12px">Ganancia cobrada · Ataxe</div>
+      <svg viewBox="0 0 220 130" style="width:100%;max-width:260px">
+        <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#E2E0D8" stroke-width="16" stroke-linecap="round"/>
+        <path id="gan-ataxe-arc" d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#1A7A4A" stroke-width="16" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283" style="transition:stroke-dashoffset .8s ease"/>
+        <text id="gan-ataxe-pct" x="110" y="100" text-anchor="middle" font-size="32" font-weight="800" font-family="DM Mono,monospace" fill="#1A7A4A">0%</text>
+      </svg>
+      <div style="margin-top:4px">
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)" id="gan-ataxe-cobrada">u$0</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">de <span id="gan-ataxe-total">u$0</span> total</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">Pendiente: <span id="gan-ataxe-pend" style="color:var(--green)">u$0</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OBJETIVO DE GANANCIA DE LARA -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:24px;margin-top:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <div style="font-size:15px;font-weight:700">Meta de ganancia de Lara</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">Cuanto queres que Lara gane en total</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-family:var(--mono);font-size:13px;color:var(--ink3)">Objetivo u$</span>
+        <input id="meta-lara" type="number" placeholder="50000" step="1000" oninput="renderMetaLara();saveState();" style="width:120px;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:15px;font-weight:600;padding:8px 11px;font-family:var(--mono);outline:none"/>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px">
+      <svg viewBox="0 0 320 180" style="width:100%;max-width:360px">
+        <path d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke="#E2E0D8" stroke-width="20" stroke-linecap="round"/>
+        <path id="meta-arc" d="M 30 160 A 130 130 0 0 1 290 160" fill="none" stroke="#7c3aed" stroke-width="20" stroke-linecap="round" stroke-dasharray="408" stroke-dashoffset="408" style="transition:stroke-dashoffset 1s ease"/>
+        <text id="meta-pct" x="160" y="140" text-anchor="middle" font-size="46" font-weight="800" font-family="DM Mono,monospace" fill="#7c3aed">0%</text>
+        <text id="meta-label" x="160" y="168" text-anchor="middle" font-size="12" font-family="Syne,sans-serif" fill="#888882">definí un objetivo</text>
+      </svg>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div style="background:var(--purple-bg);border:1px solid #C5BFFA;border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:5px">Ya ganado</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--purple)" id="meta-ganado">u$0</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:5px">Falta ganar</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--ink)" id="meta-falta">u$0</div>
+      </div>
+      <div style="background:var(--blue-bg);border:1px solid #C5D8F5;border-radius:var(--r);padding:14px;text-align:center">
+        <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:5px">Tiempo estimado</div>
+        <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--blue)" id="meta-tiempo">—</div>
+      </div>
+    </div>
+    <div id="meta-proyeccion" style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:12px"></div>
+  </div>
+
+  </div>
+
   </div>
 </div>
 
@@ -548,6 +624,23 @@ async function syncDesdeSupabase(){
     ST.clienteNotas = {};
     (notasDB||[]).forEach(function(n){ ST.clienteNotas[n.cliente] = n.nota; });
 
+    // Cobranzas
+    try {
+      var { data: cobranzasDB } = await supa.from('cobranzas').select('*').order('created_at');
+      if(cobranzasDB){
+        ST.cobranzasHistorial = cobranzasDB.map(function(c){
+          return {
+            id: Number(c.id), fecha: c.fecha, descripcion: c.descripcion||'',
+            monto: parseFloat(c.monto), moneda: c.moneda, medio: c.medio,
+            lotePrincipal: c.lote_principal, aplicaciones: c.aplicaciones||[],
+            saldoGenerado: parseFloat(c.saldo_generado)||0, anulada: c.anulada||false
+          };
+        });
+      }
+      var { data: saldoDB } = await supa.from('saldo_cobranzas').select('*').eq('id',1).single();
+      if(saldoDB) ST.saldoCobranzas = parseFloat(saldoDB.monto)||0;
+    } catch(eCob){ console.warn('Cobranzas no disponibles en Supabase aun:', eCob.message); }
+
     // Seq
     var maxId = Math.max.apply(null, ST.lotes.map(function(l){ return l.id; }));
     if(maxId > ST.seq) ST.seq = maxId;
@@ -618,6 +711,20 @@ async function saveToSupabase(tipo, data){
     }
     else if(tipo === 'nota_cliente'){
       await supa.from('cliente_notas').upsert({ cliente: data.cliente, nota: data.nota }, { onConflict: 'cliente' });
+    }
+    else if(tipo === 'cobranza_insert'){
+      await supa.from('cobranzas').insert({
+        id: data.id, fecha: data.fecha, descripcion: data.descripcion,
+        monto: data.monto, moneda: data.moneda, medio: data.medio,
+        lote_principal: data.lotePrincipal, aplicaciones: data.aplicaciones,
+        saldo_generado: data.saldoGenerado, anulada: false
+      });
+    }
+    else if(tipo === 'cobranza_anular'){
+      await supa.from('cobranzas').update({ anulada: data.anulada }).eq('id', data.id);
+    }
+    else if(tipo === 'saldo_cobranzas'){
+      await supa.from('saldo_cobranzas').update({ monto: data.monto }).eq('id', 1);
     }
 
     var ind = document.getElementById('save-indicator');
@@ -1251,15 +1358,7 @@ function renderCuadre(){
         '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">Ataxe: '+fU(ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0))+'</span>'+
       '</div>'+
     '</div>'+
-    (function(){
-      var totTr=ST.transitoItems?ST.transitoItems.reduce(function(a,t){return a+t.monto;},0):0;
-      if(!totTr)return '';
-      return '<div style="background:#FFF8E6;border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
-        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">En tránsito (machete)</div>'+
-        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(totTr)+'</div>'+
-        '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px">Cobrado pero no disponible aún</div>'+
-      '</div>';
-    })()+
+
     '<div style="background:var(--purple-bg);border:1px solid #C5BFFA;border-radius:var(--r);padding:12px 14px">'+
       '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:6px">Objetivo a recuperar (Lara)</div>'+
       '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--purple)">'+fU(objetivo)+'</div>'+
@@ -1283,28 +1382,13 @@ function renderCuadre(){
       '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px;opacity:.9">Tiene que ser '+fU(objetivo)+'</div>'+
       '<div style="font-size:10px;color:var(--amber);font-family:var(--mono);margin-top:2px;opacity:.7">Ganancia Ataxe en calle (aparte): '+fU(pcAtaxeCuadre)+'</div>'+
     '</div>'+
-    (function(){
-      var totTr=ST.transitoItems?ST.transitoItems.reduce(function(a,t){return a+t.monto;},0):0;
-      if(!totTr)return '';
-      return '<div style="background:#FFF8E6;border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
-        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">En tránsito (machete)</div>'+
-        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(totTr)+'</div>'+
-        '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px">Cobrado pero no disponible aún</div>'+
-      '</div>';
-    })()+
-    (function(){
-      var totGanObj=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
-      var totGanAtObj=ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0);
-      return '<div style="background:var(--green-bg);border:1px solid var(--green-light);border-radius:var(--r);padding:12px 14px">'+
-        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:6px">Ganancia total esperada</div>'+
-        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--green)">'+fU(totGanObj+totGanAtObj)+'</div>'+
-        '<div style="font-size:11px;color:var(--green);font-family:var(--mono);margin-top:3px">Capital invertido: '+fU(totC)+'</div>'+
-        '<div style="margin-top:6px;border-top:1px solid var(--green-light);padding-top:6px;display:flex;gap:10px">'+
-          '<span style="font-family:var(--mono);font-size:11px;color:#7c3aed">Lara: '+fU(totGanObj)+'</span>'+
-          '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">Ataxe: '+fU(totGanAtObj)+'</span>'+
-        '</div>'+
-      '</div>';
-    })();
+    (ST.transitoItems&&ST.transitoItems.reduce(function(a,t){return a+t.monto;},0)>0?
+      '<div style="background:#FFF8E6;border:1px solid var(--amber-light);border-radius:var(--r);padding:12px 14px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:6px">En transito (machete)</div>'+
+        '<div style="font-size:22px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(ST.transitoItems.reduce(function(a,t){return a+t.monto;},0))+'</div>'+
+        '<div style="font-size:11px;color:var(--amber);font-family:var(--mono);margin-top:3px">Cobrado pero no disponible aun</div>'+
+      '</div>'
+    :'');
 
   var diffIcon=ok?'✓':'⚠';
   var diffColor=ok?'var(--green)':diferencia>0?'var(--blue)':'var(--red)';
@@ -1316,6 +1400,45 @@ function renderCuadre(){
       ? 'Hay '+fU(diferencia)+' de excedente sobre el objetivo de Lara.'
       : 'Faltan '+fU(Math.abs(diferencia))+' para recuperar Capital '+fU(CAPITAL_INICIAL)+' + Ganancia Lara '+fU(totGanLaraC)+'.';
   var diffVal=ok?'OK':fU(Math.abs(diferencia));
+
+  // Bloque excedente — solo cuando caja > objetivo (diferencia positiva)
+  var excedenteHtml='';
+  if(diferencia>0){
+    var optsLotesExc='<option value="">Seleccionar lote...</option>'+
+      ST.lotes.filter(function(l){return porCobrar(l)>0;}).map(function(l){
+        return'<option value="'+l.id+'">L'+l.id+' - '+l.cliente+' - '+l.producto.slice(0,25)+' (debe: '+fU(porCobrar(l))+')</option>';
+      }).join('');
+    excedenteHtml=
+      '<div id="exc-panel" style="margin-top:12px;background:var(--blue-bg);border:1px solid #C5D8F5;border-radius:var(--r);padding:14px 16px">'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);font-weight:600;margin-bottom:4px">'+
+          'Hay '+fU(diferencia)+' de excedente en poder de Lara - corresponde a ganancia de Ataxe'+
+        '</div>'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--blue);opacity:.8;margin-bottom:12px">Que hacemos con este monto?</div>'+
+        '<div style="display:flex;flex-direction:column;gap:8px">'+
+          '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+            '<div>'+
+              '<div style="font-size:12px;font-weight:600">Registrar como ganancia tomada por Ataxe</div>'+
+              '<div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:2px">Ataxe retiro '+fU(diferencia)+' de ganancia</div>'+
+            '</div>'+
+            '<button id="exc-btn-ganancia" data-monto="'+diferencia+'" style="padding:6px 14px;border-radius:var(--r);border:1px solid var(--green-light);background:var(--green-bg);color:var(--green);cursor:pointer;font-size:12px;font-family:var(--mono);white-space:nowrap">Registrar</button>'+
+          '</div>'+
+          '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px">'+
+            '<div style="font-size:12px;font-weight:600;margin-bottom:8px">Aplicar como cobranza a un lote existente</div>'+
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">'+
+              '<div style="flex:1;min-width:160px"><select id="exc-lote-cobro" style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:12px;padding:7px 10px;font-family:var(--font);outline:none">'+optsLotesExc+'</select></div>'+
+              '<button id="exc-btn-cobro" data-monto="'+diferencia+'" style="padding:6px 14px;border-radius:var(--r);border:1px solid #C5D8F5;background:var(--blue-bg);color:var(--blue);cursor:pointer;font-size:12px;font-family:var(--mono);white-space:nowrap">Aplicar</button>'+
+            '</div>'+
+          '</div>'+
+          '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'+
+            '<div>'+
+              '<div style="font-size:12px;font-weight:600">Usar como capital para un lote nuevo</div>'+
+              '<div style="font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:2px">Al crear el nuevo lote indica que '+fU(diferencia)+' vienen de este excedente</div>'+
+            '</div>'+
+            '<button id="exc-btn-nuevo" style="padding:6px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg);color:var(--ink2);cursor:pointer;font-size:12px;font-family:var(--mono);white-space:nowrap">Ir a Nuevo lote</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  }
 
   document.getElementById('cuadre-resultado').innerHTML=
     '<div style="background:'+diffBg+';border:2px solid '+diffBorder+';border-radius:var(--r2);padding:16px 20px">'+
@@ -1332,7 +1455,19 @@ function renderCuadre(){
         '</div>'+
         '<div style="font-family:var(--mono);font-size:24px;font-weight:700;color:'+diffColor+'">'+diffVal+'</div>'+
       '</div>'+
+      excedenteHtml+
     '</div>';
+  setTimeout(function(){
+    var btnG=document.getElementById('exc-btn-ganancia');
+    if(btnG)btnG.addEventListener('click',function(){aplicarExcedente('ganancia',parseFloat(this.getAttribute('data-monto')));});
+    var btnC=document.getElementById('exc-btn-cobro');
+    if(btnC)btnC.addEventListener('click',function(){aplicarExcedente('cobro',parseFloat(this.getAttribute('data-monto')));});
+    var btnN=document.getElementById('exc-btn-nuevo');
+    if(btnN)btnN.addEventListener('click',function(){
+      var tabs=document.querySelectorAll('.nav-tab');
+      for(var i=0;i<tabs.length;i++){if(tabs[i].textContent.indexOf('Nuevo lote')>=0){showTab('nuevo',tabs[i]);break;}}
+    });
+  },50);
 }
 
 // ─── PERSISTENCIA localStorage ───────────────────────────────────────────────
@@ -1346,6 +1481,8 @@ function saveState(){
       clienteNotas: ST.clienteNotas||{},
       cobranzasHistorial: ST.cobranzasHistorial||[],
       saldoCobranzas: ST.saldoCobranzas||0,
+      metaLara: (document.getElementById('meta-lara')||{}).value||'',
+      metaLara: (document.getElementById('meta-lara')||{}).value||'',
       cobranzasHistorial: ST.cobranzasHistorial||[],
       saldoCobranzas: ST.saldoCobranzas||0,
       transitoItems: ST.transitoItems||[],
@@ -1393,6 +1530,7 @@ function loadState(){
     if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
     if(saved.cobranzasHistorial)ST.cobranzasHistorial=saved.cobranzasHistorial;
     if(typeof saved.saldoCobranzas==='number')ST.saldoCobranzas=saved.saldoCobranzas;
+    if(saved.metaLara){var ml=document.getElementById('meta-lara');if(ml)ml.value=saved.metaLara;}
     if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
   }catch(e){console.warn('No se pudo cargar estado:',e);}
 }
@@ -1821,6 +1959,7 @@ function importarDatos(input){
       if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
       if(saved.cobranzasHistorial)ST.cobranzasHistorial=saved.cobranzasHistorial;
       if(typeof saved.saldoCobranzas==='number')ST.saldoCobranzas=saved.saldoCobranzas;
+      if(saved.metaLara){var ml2=document.getElementById('meta-lara');if(ml2)ml2.value=saved.metaLara;}
       if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
       if(saved.seq&&saved.seq>ST.seq)ST.seq=saved.seq;
       // Guardar en localStorage también
@@ -2075,12 +2214,18 @@ function registrarCobranza(){
     if(restante>0) ST.saldoCobranzas+=restante;
   }
 
-  ST.cobranzasHistorial.push({
+  var nuevaCobranza={
     id:Date.now(),fecha:fecha,descripcion:desc||'Sin descripción',
     monto:monto,moneda:moneda,medio:medio,
     lotePrincipal:loteId||null,aplicaciones:aplicaciones,
     saldoGenerado:restante>0?restante:0
-  });
+  };
+  ST.cobranzasHistorial.push(nuevaCobranza);
+
+  if(ONLINE_MODE){
+    saveToSupabase('cobranza_insert', nuevaCobranza);
+    saveToSupabase('saldo_cobranzas', {monto: ST.saldoCobranzas||0});
+  }
 
   saveState();
   renderAll();
@@ -2134,7 +2279,10 @@ function aplicarSaldo(){
   l.cobrado=Math.min(l.venta,l.cobrado+aplicar);
   l.cobros.push({monto:aplicar,moneda:'usd',medio:'saldo_cobranza',fecha:hoy(),nota:'Aplicado desde saldo disponible'});
   ST.saldoCobranzas-=aplicar;
-  if(ONLINE_MODE){saveToSupabase('cobro',{loteId:loteId,monto:aplicar,moneda:'usd',medio:'saldo_cobranza',fecha:hoy(),nota:'Aplicado desde saldo disponible',cobradoTotal:l.cobrado});}
+  if(ONLINE_MODE){
+    saveToSupabase('cobro',{loteId:loteId,monto:aplicar,moneda:'usd',medio:'saldo_cobranza',fecha:hoy(),nota:'Aplicado desde saldo disponible',cobradoTotal:l.cobrado});
+    saveToSupabase('saldo_cobranzas',{monto:ST.saldoCobranzas});
+  }
   saveState();
   renderAll();
   alert('Aplicado '+fU(aplicar)+' al lote L'+loteId+'. Saldo restante: '+fU(ST.saldoCobranzas));
@@ -2191,6 +2339,11 @@ function renderGastos(){
         '<div style="font-size:24px;font-weight:700;font-family:var(--mono)">'+keys.length+'</div>'+
         '<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:3px">Periodos registrados</div>'+
       '</div>'+
+      '<div style="background:var(--blue-bg);border:1px solid #C5D8F5;border-radius:var(--r2);padding:16px 18px">'+
+        '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--blue);margin-bottom:6px">Capital invertido total</div>'+
+        '<div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--blue)">'+fU(keys.reduce(function(a,k){return a+meses[k].totalCompra;},0))+'</div>'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:3px">Suma de todas las compras</div>'+
+      '</div>'+
       '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px">'+
         '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px">Promedio mensual</div>'+
         '<div style="font-size:24px;font-weight:700;font-family:var(--mono);color:var(--amber)">'+fU(Math.round(totGanLara/keys.length))+'</div>'+
@@ -2211,6 +2364,7 @@ function renderGastos(){
           '<div>'+
             '<div style="font-size:16px;font-weight:700">'+MESES_NOMBRE[m.mes]+' '+m.anio+'</div>'+
             '<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:2px">'+m.lotes.length+' lote'+(m.lotes.length>1?'s':'')+'</div>'+
+            '<div style="font-family:var(--mono);font-size:12px;color:var(--blue);margin-top:4px;font-weight:600">Capital invertido: '+fU(m.totalCompra)+'</div>'+
           '</div>'+
           '<div style="text-align:right">'+
             '<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--red)">'+fU(m.ganLara)+'</div>'+
@@ -2284,6 +2438,10 @@ function anularCobranza(id){
     ST.saldoCobranzas=Math.max(0,(ST.saldoCobranzas||0)-c.saldoGenerado);
   }
   c.anulada=true;
+  if(ONLINE_MODE){
+    saveToSupabase('cobranza_anular',{id:c.id,anulada:true});
+    saveToSupabase('saldo_cobranzas',{monto:ST.saldoCobranzas||0});
+  }
   saveState();
   renderAll();
 }
@@ -2307,12 +2465,135 @@ function restaurarCobranza(id){
     ST.saldoCobranzas=(ST.saldoCobranzas||0)+c.saldoGenerado;
   }
   c.anulada=false;
+  if(ONLINE_MODE){
+    saveToSupabase('cobranza_anular',{id:c.id,anulada:false});
+    saveToSupabase('saldo_cobranzas',{monto:ST.saldoCobranzas||0});
+  }
   saveState();
   renderAll();
 }
 
+function renderMetaLara(){
+  var metaEl=document.getElementById('meta-lara');
+  if(!metaEl)return;
+  var meta=parseFloat(metaEl.value)||0;
+  var ganLaraTot=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+
+  var pct=meta>0?Math.min(Math.round((ganLaraTot/meta)*100),100):0;
+  var falta=Math.max(0,meta-ganLaraTot);
+
+  // Arc
+  var arcLen=408;
+  var arc=document.getElementById('meta-arc');
+  var pctTxt=document.getElementById('meta-pct');
+  var labelTxt=document.getElementById('meta-label');
+  if(arc)arc.setAttribute('stroke-dashoffset',arcLen-(arcLen*pct/100));
+  if(pctTxt)pctTxt.textContent=pct+'%';
+  if(labelTxt)labelTxt.textContent=meta>0?(pct>=100?'Objetivo alcanzado!':'del objetivo'):'definí un objetivo';
+
+  var elG=document.getElementById('meta-ganado');if(elG)elG.textContent=fU(ganLaraTot);
+  var elF=document.getElementById('meta-falta');if(elF)elF.textContent=fU(falta);
+
+  // Proyeccion usando promedio mensual
+  var mesesConOps={};
+  ST.lotes.forEach(function(l){
+    if(ganLara(l)<=0)return;
+    var p=l.fecha.split('/');
+    if(p.length<2)return;
+    var m=p[1],y=p.length>=3?p[2]:'2026';
+    mesesConOps[y+'-'+m]=1;
+  });
+  var cantMeses=Object.keys(mesesConOps).length||1;
+  var promedioMensual=ganLaraTot/cantMeses;
+
+  var elT=document.getElementById('meta-tiempo');
+  var elP=document.getElementById('meta-proyeccion');
+  if(meta>0&&falta>0&&promedioMensual>0){
+    var mesesFaltan=falta/promedioMensual;
+    var mesesEnteros=Math.floor(mesesFaltan);
+    var dias=Math.round((mesesFaltan-mesesEnteros)*30);
+    var tiempoStr=mesesEnteros>0?(mesesEnteros+' mes'+(mesesEnteros>1?'es':'')+(dias>0?' '+dias+'d':'')):(Math.round(mesesFaltan*30)+' dias');
+    if(elT)elT.textContent='~'+tiempoStr;
+    if(elP)elP.innerHTML='Ganando un promedio de <strong style="color:var(--purple)">'+fU(Math.round(promedioMensual))+'/mes</strong>, '+
+      'a Lara le faltan <strong>'+fU(falta)+'</strong> para llegar a <strong>'+fU(meta)+'</strong> en aproximadamente <strong style="color:var(--blue)">'+tiempoStr+'</strong>.';
+  } else if(meta>0&&falta<=0){
+    if(elT)elT.textContent='Cumplido';
+    if(elP)elP.innerHTML='<span style="color:var(--green);font-weight:700">Objetivo de '+fU(meta)+' alcanzado.</span>';
+  } else {
+    if(elT)elT.textContent='—';
+    if(elP)elP.textContent='';
+  }
+}
+
+function renderGanGauges(){
+  // Lotes cobrados al 100% (porCobrar === 0 y cobrado > 0)
+  var lotesCompletos=ST.lotes.filter(function(l){return porCobrar(l)===0&&l.cobrado>0;});
+  var lotesPendientes=ST.lotes.filter(function(l){return porCobrar(l)>0||l.cobrado===0;});
+
+  var ganLaraCob=lotesCompletos.reduce(function(a,l){return a+ganLara(l);},0);
+  var ganAtaxeCob=lotesCompletos.reduce(function(a,l){return a+ganAtaxe(l);},0);
+  var ganLaraTot=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+  var ganAtaxeTot=ST.lotes.reduce(function(a,l){return a+ganAtaxe(l);},0);
+  var ganLaraPend=ganLaraTot-ganLaraCob;
+  var ganAtaxePend=ganAtaxeTot-ganAtaxeCob;
+
+  var pctL=ganLaraTot>0?Math.min(Math.round((ganLaraCob/ganLaraTot)*100),100):0;
+  var pctA=ganAtaxeTot>0?Math.min(Math.round((ganAtaxeCob/ganAtaxeTot)*100),100):0;
+
+  var arcLen=283;
+
+  // Lara arc
+  var arcL=document.getElementById('gan-lara-arc');
+  var pctLtxt=document.getElementById('gan-lara-pct');
+  if(arcL){arcL.setAttribute('stroke-dashoffset',arcLen-(arcLen*pctL/100));}
+  if(pctLtxt)pctLtxt.textContent=pctL+'%';
+  var elLC=document.getElementById('gan-lara-cobrada');if(elLC)elLC.textContent=fU(ganLaraCob);
+  var elLT=document.getElementById('gan-lara-total');if(elLT)elLT.textContent=fU(ganLaraTot);
+  var elLP=document.getElementById('gan-lara-pend');if(elLP)elLP.textContent=fU(ganLaraPend);
+
+  // Ataxe arc
+  var arcA=document.getElementById('gan-ataxe-arc');
+  var pctAtxt=document.getElementById('gan-ataxe-pct');
+  if(arcA){arcA.setAttribute('stroke-dashoffset',arcLen-(arcLen*pctA/100));}
+  if(pctAtxt)pctAtxt.textContent=pctA+'%';
+  var elAC=document.getElementById('gan-ataxe-cobrada');if(elAC)elAC.textContent=fU(ganAtaxeCob);
+  var elAT=document.getElementById('gan-ataxe-total');if(elAT)elAT.textContent=fU(ganAtaxeTot);
+  var elAP=document.getElementById('gan-ataxe-pend');if(elAP)elAP.textContent=fU(ganAtaxePend);
+}
+
+function aplicarExcedente(tipo, monto){
+  if(tipo==='ganancia'){
+    if(!confirm('¿Registrar '+fU(monto)+' como ganancia tomada por Ataxe?'))return;
+    if(!ST.gananciasTomadas)ST.gananciasTomadas=[];
+    ST.gananciasTomadas.push({monto:monto,fecha:hoy(),tipo:'ataxe',nota:'Excedente del cuadre'});
+    saveState();
+    renderAll();
+    alert('✓ Registrado. Ataxe tomó '+fU(monto)+' de ganancia.');
+  }
+  else if(tipo==='cobro'){
+    var loteId=parseInt(document.getElementById('exc-lote-cobro')?document.getElementById('exc-lote-cobro').value:0)||0;
+    if(!loteId){alert('Seleccioná un lote.');return;}
+    var l=ST.lotes.find(function(x){return x.id===loteId;});
+    if(!l)return;
+    var aplicar=Math.min(monto,porCobrar(l));
+    if(!confirm('¿Aplicar '+fU(aplicar)+' como cobranza al lote L'+loteId+' ('+l.cliente+' - '+l.producto.slice(0,25)+')?'))return;
+    l.cobrado=Math.min(l.venta,l.cobrado+aplicar);
+    l.cobros.push({monto:aplicar,moneda:'usd',medio:'excedente_cuadre',fecha:hoy(),nota:'Aplicado desde excedente del cuadre'});
+    if(!ST.cobranzasHistorial)ST.cobranzasHistorial=[];
+    ST.cobranzasHistorial.push({
+      id:Date.now(),fecha:hoy(),descripcion:'Excedente cuadre aplicado a L'+loteId,
+      monto:aplicar,moneda:'usd',medio:'excedente_cuadre',
+      lotePrincipal:loteId,aplicaciones:[{loteId:loteId,monto:aplicar}],saldoGenerado:0
+    });
+    if(ONLINE_MODE)saveToSupabase('cobro',{loteId:loteId,monto:aplicar,moneda:'usd',medio:'excedente_cuadre',fecha:hoy(),nota:'Excedente cuadre',cobradoTotal:l.cobrado});
+    saveState();
+    renderAll();
+    alert('✓ '+fU(aplicar)+' aplicado como cobranza al lote L'+loteId+'.');
+  }
+}
+
 function renderAll(){
-  renderCuadre();renderTransito();renderTacometro();renderCobranzas();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
+  renderCuadre();renderTransito();renderTacometro();renderGanGauges();renderMetaLara();renderCobranzas();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
   renderLotesTbl();renderClientes();renderPorCobrar();renderFlujo();
   renderTrHistorial();renderCobrosHistorial();poblarSelects();
 }
