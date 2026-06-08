@@ -138,6 +138,7 @@ select option{background:var(--white)}
   <div class="nav-tab" onclick="showTab('nuevo',this)">+ Nuevo lote</div>
   <div class="nav-tab" onclick="showTab('cobranzas',this)">↳ Cobranzas</div>
   <div class="nav-tab" onclick="showTab('gastos',this)">$ Gastos financieros</div>
+  <div class="nav-tab" onclick="showTab('kpis',this)">★ Indicadores</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button onclick="exportarDatos()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Exportar datos a JSON">↓ Exportar</button>
     <label style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap;margin:0" title="Importar datos desde JSON">↑ Importar<input type="file" id="import-file" accept=".json" style="display:none" onchange="importarDatos(this)"/></label>
@@ -150,6 +151,11 @@ select option{background:var(--white)}
 <!-- COBRANZAS -->
 <div id="tab-cobranzas" class="section">
   <div id="cobranzas-content"></div>
+</div>
+
+<!-- INDICADORES / KPIs -->
+<div id="tab-kpis" class="section">
+  <div id="kpis-content"></div>
 </div>
 
 <!-- GASTOS FINANCIEROS -->
@@ -2288,6 +2294,121 @@ function aplicarSaldo(){
   alert('Aplicado '+fU(aplicar)+' al lote L'+loteId+'. Saldo restante: '+fU(ST.saldoCobranzas));
 }
 
+function renderKPIs(){
+  var el=document.getElementById('kpis-content');
+  if(!el)return;
+
+  var CAPITAL_INICIAL=124900;
+  var lotes=ST.lotes;
+  var totCompra=lotes.reduce(function(a,l){return a+l.compra;},0);
+  var totVenta=lotes.reduce(function(a,l){return a+l.venta;},0);
+  var totGan=lotes.reduce(function(a,l){return a+l.ganancia;},0);
+  var totGanLara=lotes.reduce(function(a,l){return a+ganLara(l);},0);
+  var totCob=lotes.reduce(function(a,l){return a+l.cobrado;},0);
+  var totPC=lotes.reduce(function(a,l){return a+porCobrar(l);},0);
+
+  // 1. Rotacion de capital
+  var rotacion=CAPITAL_INICIAL>0?(totCompra/CAPITAL_INICIAL):0;
+
+  // 2. Dias promedio de cobro (lotes cobrados al 100%)
+  var lotesCobrados=lotes.filter(function(l){return porCobrar(l)===0&&l.cobrado>0;});
+  // Sin fecha de cobro exacta, usamos un proxy: no calculable preciso. Mostramos N/D si no hay datos
+  // Tiempo desde primera compra
+  var fechas=lotes.map(function(l){var p=l.fecha.split('/');if(p.length<2)return null;var y=p.length>=3?parseInt(p[2]):2026;return new Date(y,parseInt(p[1])-1,parseInt(p[0]));}).filter(function(d){return d&&!isNaN(d.getTime());});
+  var primera=fechas.length?new Date(Math.min.apply(null,fechas)):null;
+  var hoyD=new Date();
+  var diasTotales=primera?Math.floor((hoyD-primera)/(86400000)):0;
+  var mesesTotales=primera?Math.max(1,(hoyD.getFullYear()-primera.getFullYear())*12+(hoyD.getMonth()-primera.getMonth())):1;
+
+  // 3. ROI sobre capital de Lara
+  var roi=CAPITAL_INICIAL>0?(totGanLara/CAPITAL_INICIAL*100):0;
+  var roiMensual=roi/mesesTotales;
+  var roiAnualizado=roiMensual*12;
+
+  // 4. Make-up promedio ponderado
+  var makeupPond=totCompra>0?((totVenta-totCompra)/totCompra*100):0;
+
+  // 5. % cartera vencida / a plazo / al dia
+  var pcVencido=0,pcAPlazo=0,pcSinVenc=0;
+  lotes.forEach(function(l){
+    var pc=porCobrar(l);
+    if(pc<=0)return;
+    if(estaVencido(l))pcVencido+=pc;
+    else if(tieneVencimiento(l))pcAPlazo+=pc;
+    else pcSinVenc+=pc;
+  });
+
+  // 6. Concentracion por cliente (del por cobrar)
+  var porCliente={};
+  lotes.forEach(function(l){var pc=porCobrar(l);if(pc>0){if(!porCliente[l.cliente])porCliente[l.cliente]=0;porCliente[l.cliente]+=pc;}});
+  var clientesOrden=Object.entries(porCliente).sort(function(a,b){return b[1]-a[1];});
+  var topCliente=clientesOrden.length?clientesOrden[0]:['—',0];
+  var concentracion=totPC>0?(topCliente[1]/totPC*100):0;
+
+  // 7. Ticket promedio por lote
+  var ticketProm=lotes.length?(totVenta/lotes.length):0;
+
+  // 8. Ganancia por dia de capital
+  var ganPorDia=diasTotales>0?(totGan/diasTotales):0;
+
+  // 9. % recupero global
+  var recupero=totVenta>0?(totCob/totVenta*100):0;
+
+  // 10. Lotes activos vs cerrados
+  var cerrados=lotesCobrados.length;
+  var activos=lotes.length-cerrados;
+
+  function card(label,value,sub,color){
+    return '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px">'+
+      '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px">'+label+'</div>'+
+      '<div style="font-size:26px;font-weight:800;font-family:var(--mono);color:'+(color||'var(--ink)')+'">'+value+'</div>'+
+      '<div style="font-size:11px;color:var(--ink3);font-family:var(--mono);margin-top:4px">'+sub+'</div>'+
+    '</div>';
+  }
+
+  var html='<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px">Indicadores clave del negocio</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px">'+
+      card('Rotación de capital', rotacion.toFixed(1)+'x', 'El capital giró '+rotacion.toFixed(1)+' veces (compraste '+fU(totCompra)+' con '+fU(CAPITAL_INICIAL)+')', 'var(--blue)')+
+      card('ROI capital de Lara', roi.toFixed(1)+'%', 'Ganancia Lara '+fU(totGanLara)+' sobre '+fU(CAPITAL_INICIAL)+' invertido', 'var(--purple)')+
+      card('ROI anualizado', roiAnualizado.toFixed(1)+'%', 'Proyectado a 12 meses ('+roiMensual.toFixed(1)+'%/mes)', 'var(--purple)')+
+      card('Make-up ponderado', makeupPond.toFixed(1)+'%', 'Margen real sobre costo total', 'var(--green)')+
+      card('% Recupero global', recupero.toFixed(0)+'%', fU(totCob)+' cobrado de '+fU(totVenta)+' vendido', 'var(--green)')+
+      card('Ganancia por día', fU(Math.round(ganPorDia)), 'Generás esto por día ('+diasTotales+' días operando)', 'var(--green)')+
+      card('Ticket promedio', fU(Math.round(ticketProm)), 'Venta promedio por lote ('+lotes.length+' lotes)', 'var(--ink)')+
+      card('Concentración cliente', concentracion.toFixed(0)+'%', 'De lo por cobrar, '+concentracion.toFixed(0)+'% es de '+topCliente[0], concentracion>50?'var(--red)':'var(--amber)')+
+      card('Lotes activos', activos+' / '+lotes.length, cerrados+' ya cerrados al 100%', 'var(--blue)')+
+    '</div>'+
+
+    // Cartera por estado
+    '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px">Estado de la cartera por cobrar</div>'+
+    '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:24px">'+
+      '<div style="height:24px;background:var(--border);border-radius:12px;overflow:hidden;display:flex;margin-bottom:14px">'+
+        (totPC>0?'<div style="width:'+(pcSinVenc/totPC*100)+'%;background:var(--blue)" title="Sin vencimiento"></div>':'')+
+        (totPC>0?'<div style="width:'+(pcAPlazo/totPC*100)+'%;background:var(--amber)" title="A plazo"></div>':'')+
+        (totPC>0?'<div style="width:'+(pcVencido/totPC*100)+'%;background:var(--red)" title="Vencido"></div>':'')+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'+
+        '<div style="text-align:center"><div style="font-family:var(--mono);font-size:11px;color:var(--blue)">Sin vencimiento</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--blue)">'+fU(pcSinVenc)+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3)">'+(totPC>0?Math.round(pcSinVenc/totPC*100):0)+'%</div></div>'+
+        '<div style="text-align:center"><div style="font-family:var(--mono);font-size:11px;color:var(--amber)">A plazo</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--amber)">'+fU(pcAPlazo)+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3)">'+(totPC>0?Math.round(pcAPlazo/totPC*100):0)+'%</div></div>'+
+        '<div style="text-align:center"><div style="font-family:var(--mono);font-size:11px;color:var(--red)">Vencido</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--red)">'+fU(pcVencido)+'</div><div style="font-family:var(--mono);font-size:10px;color:var(--ink3)">'+(totPC>0?Math.round(pcVencido/totPC*100):0)+'%</div></div>'+
+      '</div>'+
+    '</div>'+
+
+    // Concentracion por cliente
+    '<div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px">Concentración del por cobrar por cliente</div>'+
+    '<div style="background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px">'+
+      clientesOrden.map(function(c){
+        var pctC=totPC>0?(c[1]/totPC*100):0;
+        return '<div style="margin-bottom:10px">'+
+          '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="font-weight:600">'+c[0]+'</span><span style="font-family:var(--mono)">'+fU(c[1])+' ('+pctC.toFixed(0)+'%)</span></div>'+
+          '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden"><div style="width:'+pctC+'%;background:'+(pctC>50?'var(--red)':pctC>30?'var(--amber)':'var(--blue)')+';height:100%"></div></div>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+
+  el.innerHTML=html;
+}
+
 function renderGastos(){
   var el=document.getElementById('gastos-content');
   if(!el)return;
@@ -2593,7 +2714,7 @@ function aplicarExcedente(tipo, monto){
 }
 
 function renderAll(){
-  renderCuadre();renderTransito();renderTacometro();renderGanGauges();renderMetaLara();renderCobranzas();renderGastos();renderHero();renderResTabla();renderAlertas();renderResPC();
+  renderCuadre();renderTransito();renderTacometro();renderGanGauges();renderMetaLara();renderCobranzas();renderGastos();renderKPIs();renderHero();renderResTabla();renderAlertas();renderResPC();
   renderLotesTbl();renderClientes();renderPorCobrar();renderFlujo();
   renderTrHistorial();renderCobrosHistorial();poblarSelects();
 }
