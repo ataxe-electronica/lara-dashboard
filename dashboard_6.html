@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard financiero · Distribución de tecnología</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --paper:#F6F2E9; --paper2:#FBF8F1; --ink:#211E18; --ink2:#5C564B;
+    --line:#DAD3C4; --line2:#C7BFAC;
+    --green:#1C7A57; --coral:#BF4E2C; --blue:#2C5E8F; --gold:#A9802E;
+    --red:#C23B33; --red-soft:#F2D7D4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:'Instrument Sans',sans-serif;
+    line-height:1.5;padding:32px 24px 64px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto}
+  .num{font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+    flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:20px}
+  .title-block .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--coral);font-weight:600;margin-bottom:4px}
+  .title-block h1{font-family:'Fraunces',serif;font-weight:600;font-size:36px;
+    line-height:1.02;letter-spacing:-.01em}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  button{font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;
+    border:1px solid var(--line2);background:var(--paper2);color:var(--ink);
+    padding:8px 14px;border-radius:7px;transition:.15s}
+  button:hover{background:#fff;border-color:var(--ink2)}
+  button:active{transform:translateY(1px)}
+  button.ghost{background:transparent}
+  .danger:hover{border-color:var(--red);color:var(--red)}
+
+  nav{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:28px}
+  .tab{font-size:14px;font-weight:500;padding:9px 16px;border:1px solid transparent;
+    border-radius:8px;cursor:pointer;color:var(--ink2);background:transparent}
+  .tab:hover{color:var(--ink);background:var(--paper2)}
+  .tab.active{color:var(--ink);background:var(--paper2);border-color:var(--line);font-weight:600}
+  .panel-tab{display:none}
+  .panel-tab.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .intro{font-size:14px;color:var(--ink2);margin-bottom:22px;max-width:64ch}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:14px;margin-bottom:30px}
+  .card{background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:15px 17px}
+  .card .lab{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+  .card .val{font-family:'Fraunces',serif;font-size:27px;font-weight:500;margin-top:5px;letter-spacing:-.01em}
+  .card .sub{font-size:12px;color:var(--ink2);margin-top:2px}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+
+  .charts{display:grid;grid-template-columns:1fr;gap:20px;margin-bottom:34px}
+  @media(min-width:880px){.charts.two{grid-template-columns:1fr 1fr}}
+  .pn{background:var(--paper2);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px}
+  .pn h2{font-family:'Fraunces',serif;font-weight:500;font-size:19px;letter-spacing:-.01em}
+  .pn .cap{font-size:12.5px;color:var(--ink2);margin:2px 0 14px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--ink2)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .swl{width:16px;height:3px;border-radius:2px;display:inline-block}
+  .cbox{position:relative;width:100%;height:300px}
+
+  .table-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:21px}
+  .table-head p{font-size:12.5px;color:var(--ink2);margin-bottom:12px}
+  .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper2)}
+  table{border-collapse:collapse;width:100%;min-width:640px}
+  th,td{padding:9px 12px;text-align:right;font-size:13.5px;border-bottom:1px solid var(--line)}
+  th{font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2);
+    font-weight:600;background:#EFE9DC}
+  th:first-child,td:first-child{text-align:left}
+  tr:last-child td{border-bottom:none}
+  .mes-in{font-family:inherit;font-size:13.5px;font-weight:500;border:none;background:transparent;
+    color:var(--ink);width:104px;padding:2px 4px;border-radius:5px}
+  .num-in{font-family:'Spline Sans Mono',monospace;font-size:13.5px;text-align:right;
+    border:1px solid transparent;background:transparent;color:var(--ink);width:92px;
+    padding:4px 6px;border-radius:6px;font-variant-numeric:tabular-nums}
+  .num-in:hover,.mes-in:hover{background:#fff}
+  .num-in:focus,.mes-in:focus{outline:none;background:#fff;border-color:var(--blue);
+    box-shadow:0 0 0 2px rgba(44,94,143,.15)}
+  td.calc{color:var(--ink2);font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  td.res{font-weight:600;font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums}
+  .del{border:none;background:transparent;color:var(--line2);font-size:16px;cursor:pointer;
+    padding:2px 6px;border-radius:5px;line-height:1}
+  .del:hover{color:var(--red);background:var(--red-soft)}
+  tfoot td{border-top:2px solid var(--ink);border-bottom:none;font-weight:600;
+    font-family:'Spline Sans Mono',monospace;font-variant-numeric:tabular-nums;
+    background:#EFE9DC;padding-top:11px}
+  tfoot td:first-child{font-family:'Instrument Sans';letter-spacing:.03em;text-transform:uppercase;font-size:11.5px}
+  .addrow{margin-top:12px}
+
+  .kpi-section{margin-bottom:26px}
+  .kpi-section h3{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:12px;
+    color:var(--ink2);border-bottom:1px solid var(--line);padding-bottom:6px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .kpi{background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:15px 17px;position:relative}
+  .kpi .badge{position:absolute;top:13px;right:14px;font-size:10px;font-weight:600;letter-spacing:.04em;
+    text-transform:uppercase;padding:2px 9px;border-radius:20px}
+  .kpi .klab{font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink2);font-weight:600;padding-right:60px}
+  .kpi .kval{font-family:'Fraunces',serif;font-size:30px;font-weight:500;margin-top:6px;letter-spacing:-.01em}
+  .kpi .ktarget{font-size:12px;color:var(--ink2);margin-top:2px}
+  .kpi .knote{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.4;border-top:1px dashed var(--line);padding-top:7px}
+  .sim-card{max-width:580px;background:var(--paper2);border:1px solid var(--line);border-radius:14px;padding:24px 26px}
+  .sim-row{margin-bottom:22px}
+  .sim-row .lh{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;font-weight:500;margin-bottom:9px}
+  .sim-row .lh span:last-child{font-family:'Spline Sans Mono',monospace;font-size:15px}
+  .sim-row input[type=range]{width:100%;accent-color:var(--blue);height:6px}
+  .sim-out{text-align:center;margin:26px 0 8px}
+  .sim-ratio{font-family:'Fraunces',serif;font-size:58px;font-weight:600;line-height:1}
+  .sim-badge{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-top:6px}
+  .gauge{display:flex;height:11px;border-radius:6px;overflow:hidden;position:relative;margin:18px 0 6px}
+  .gauge .marker{position:absolute;top:-4px;width:3px;height:19px;background:var(--ink);border-radius:2px;transform:translateX(-50%);transition:left .12s}
+  .gauge-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--ink2);margin-bottom:18px}
+  .sim-help{font-size:13px;color:var(--ink2);line-height:1.7;border-top:1px dashed var(--line);padding-top:14px;margin-top:18px}
+  .sim-help div{padding:2px 0}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:28px}
+  .info-card{background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .info-card h3{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin-bottom:6px;
+    display:flex;align-items:center;gap:8px}
+  .info-card .tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    padding:2px 8px;border-radius:20px;background:#EFE9DC;color:var(--ink2)}
+  .info-card ul{list-style:none;font-size:13.5px;color:var(--ink2);margin-top:8px}
+  .info-card li{padding:4px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:12px}
+  .info-card li:last-child{border-bottom:none}
+  .info-card li b{color:var(--ink);font-family:'Spline Sans Mono',monospace;font-weight:500}
+  .note{font-size:12.5px;color:var(--ink2);background:var(--paper2);border:1px dashed var(--line2);
+    border-radius:10px;padding:12px 16px;margin-top:8px}
+  footer{margin-top:32px;font-size:12px;color:var(--ink2);text-align:center;
+    border-top:1px solid var(--line);padding-top:16px}
+  input[type=file]{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <div class="eyebrow">Distribución de tecnología</div>
+      <h1>Panel financiero</h1>
+    </div>
+    <div class="actions">
+      <button class="ghost" onclick="exportJSON()">↓ Exportar</button>
+      <button class="ghost" onclick="document.getElementById('imp').click()">↑ Importar</button>
+      <input type="file" id="imp" accept="application/json" onchange="importJSON(event)">
+      <button class="ghost danger" onclick="resetData()">Restaurar originales</button>
+    </div>
+  </header>
+
+  <nav id="nav"></nav>
+
+  <!-- ===== TAB: KPIs ===== -->
+  <div class="panel-tab active" data-tab="kpis">
+    <p class="intro">Indicadores clave, calculados en vivo desde las otras pestañas. El color marca el estado: verde = sano, ámbar = atención, rojo = problema. Los objetivos son referencias razonables para distribución de tecnología.</p>
+    <div id="kpi-body"></div>
+  </div>
+
+  <!-- ===== TAB 1: GANANCIA Y GASTOS ===== -->
+  <div class="panel-tab" data-tab="ganancia">
+    <p class="intro">Ganancia del mes contra el total de gastos (empresa + personal). El resultado es lo que queda antes del costo financiero.</p>
+    <section class="cards" id="cards-ganancia"></section>
+    <section class="charts two">
+      <div class="pn"><h2>Vista combinada</h2><p class="cap">Ingresos y gastos por mes, con el resultado como línea.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--green)"></span>Ganancia</span>
+        <span><span class="sw" style="background:var(--coral)"></span>Gastos totales</span>
+        <span><span class="swl" style="background:var(--blue)"></span>Resultado</span></div>
+        <div class="cbox"><canvas id="c_combo" role="img" aria-label="Ganancia, gastos y resultado por mes"></canvas></div></div>
+      <div class="pn"><h2>Resultado mensual</h2><p class="cap">Solo el neto: verde si gana, rojo si pierde.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--green)"></span>Positivo</span>
+        <span><span class="sw" style="background:var(--red)"></span>Negativo</span></div>
+        <div class="cbox"><canvas id="c_res" role="img" aria-label="Resultado neto por mes"></canvas></div></div>
+    </section>
+    <div class="table-head"><h2>Datos mensuales</h2><p>Tocá cualquier número para editarlo.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Mes</th><th>Ganancia</th><th>G. empresa</th><th>G. personal</th><th>Total gastos</th><th>Resultado</th><th></th></tr></thead>
+      <tbody id="tb-ganancia"></tbody><tfoot><tr id="tf-ganancia"></tr></tfoot></table></div>
+    <div class="addrow"><button onclick="addRow('ganancia')">+ Agregar mes</button></div>
+  </div>
+
+  <!-- ===== TAB 2: VENTAS Y COMPRAS ===== -->
+  <div class="panel-tab" data-tab="ventas">
+    <p class="intro">Compras de mercadería contra ventas, ambas en USD. La diferencia mensual se acumula en un saldo: cuando comprás más de lo que vendés (stockeo) el saldo cae; después lo recuperás vendiendo.</p>
+    <section class="cards" id="cards-ventas"></section>
+    <section class="charts two">
+      <div class="pn"><h2>Compras vs ventas</h2><p class="cap">Cuánto entró por ventas y cuánto salió en compras, por mes.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--green)"></span>Ventas USD</span>
+        <span><span class="sw" style="background:var(--coral)"></span>Compras USD</span></div>
+        <div class="cbox"><canvas id="c_cv" role="img" aria-label="Compras contra ventas por mes"></canvas></div></div>
+      <div class="pn"><h2>Saldo acumulado</h2><p class="cap">El acumulado de ventas menos compras a lo largo del tiempo.</p>
+        <div class="legend"><span><span class="swl" style="background:var(--blue)"></span>Saldo acumulado</span></div>
+        <div class="cbox"><canvas id="c_saldo" role="img" aria-label="Saldo acumulado de ventas menos compras"></canvas></div></div>
+    </section>
+    <div class="table-head"><h2>Datos mensuales</h2><p>La diferencia y el saldo se calculan solos.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Mes</th><th>Compras USD</th><th>Ventas USD</th><th>Diferencia</th><th>Saldo acum.</th><th></th></tr></thead>
+      <tbody id="tb-ventas"></tbody><tfoot><tr id="tf-ventas"></tr></tfoot></table></div>
+    <div class="addrow"><button onclick="addRow('ventas')">+ Agregar mes</button></div>
+  </div>
+
+  <!-- ===== TAB 3: MARGEN ===== -->
+  <div class="panel-tab" data-tab="margen">
+    <p class="intro">Margen = ganancia del mes sobre ventas. En distribución de tecnología es naturalmente fino; lo importante es la tendencia.</p>
+    <section class="cards" id="cards-margen"></section>
+    <section class="charts two">
+      <div class="pn"><h2>Margen por mes</h2><p class="cap">Porcentaje de la venta que queda como ganancia.</p>
+        <div class="legend"><span><span class="swl" style="background:var(--gold)"></span>Margen %</span></div>
+        <div class="cbox"><canvas id="c_margen" role="img" aria-label="Margen porcentual por mes"></canvas></div></div>
+      <div class="pn"><h2>Ganancia vs ventas</h2><p class="cap">Volumen de ventas y la ganancia que generan.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--green)"></span>Ventas USD</span>
+        <span><span class="swl" style="background:var(--coral)"></span>Ganancia</span></div>
+        <div class="cbox"><canvas id="c_gv" role="img" aria-label="Ganancia contra ventas por mes"></canvas></div></div>
+    </section>
+    <div class="table-head"><h2>Datos mensuales</h2><p>El margen se calcula como ganancia / ventas.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Mes</th><th>Ventas USD</th><th>Ganancia</th><th>Margen</th><th></th></tr></thead>
+      <tbody id="tb-margen"></tbody><tfoot><tr id="tf-margen"></tr></tfoot></table></div>
+    <div class="addrow"><button onclick="addRow('margen')">+ Agregar mes</button></div>
+  </div>
+
+  <!-- ===== TAB 4: VOLUMEN ===== -->
+  <div class="panel-tab" data-tab="volumen">
+    <p class="intro">Unidades vendidas y cantidad de operaciones. El promedio de unidades por venta dice si vendés por mayor (tickets grandes) o al detalle.</p>
+    <section class="cards" id="cards-volumen"></section>
+    <section class="charts two">
+      <div class="pn"><h2>Unidades y ventas</h2><p class="cap">Unidades despachadas y número de operaciones por mes.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--blue)"></span>Unidades</span>
+        <span><span class="swl" style="background:var(--gold)"></span>Cant. de ventas</span></div>
+        <div class="cbox"><canvas id="c_vol" role="img" aria-label="Unidades vendidas y cantidad de ventas por mes"></canvas></div></div>
+      <div class="pn"><h2>Unidades por venta</h2><p class="cap">Tamaño promedio del ticket en unidades.</p>
+        <div class="legend"><span><span class="swl" style="background:var(--coral)"></span>Unidades / venta</span></div>
+        <div class="cbox"><canvas id="c_ticket" role="img" aria-label="Promedio de unidades por venta por mes"></canvas></div></div>
+    </section>
+    <div class="table-head"><h2>Datos mensuales</h2><p>El promedio por venta se calcula solo.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Mes</th><th>Unidades</th><th>Cant. ventas</th><th>Unid./venta</th><th></th></tr></thead>
+      <tbody id="tb-volumen"></tbody><tfoot><tr id="tf-volumen"></tr></tfoot></table></div>
+    <div class="addrow"><button onclick="addRow('volumen')">+ Agregar mes</button></div>
+  </div>
+
+  <!-- ===== TAB: COSTO FINANCIERO ===== -->
+  <div class="panel-tab" data-tab="costofin">
+    <p class="intro">Cuánto de la ganancia del mes se va en financiarte (palanca + stock virtual + iPhones). Estimado a partir de las hojas mensuales. La línea roja sobre las barras es la porción que se come el costo financiero.</p>
+    <section class="cards" id="cards-costofin"></section>
+    <section class="charts two">
+      <div class="pn"><h2>Ganancia vs costo financiero</h2><p class="cap">La barra es la ganancia; la línea, lo que cuesta financiarte.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--green)"></span>Ganancia</span>
+        <span><span class="swl" style="background:var(--red)"></span>Costo financiero</span></div>
+        <div class="cbox"><canvas id="c_cf1" role="img" aria-label="Ganancia contra costo financiero por mes"></canvas></div></div>
+      <div class="pn"><h2>Peso del costo financiero</h2><p class="cap">Porcentaje de la ganancia que se va en intereses.</p>
+        <div class="legend"><span><span class="swl" style="background:var(--coral)"></span>% de la ganancia</span></div>
+        <div class="cbox"><canvas id="c_cf2" role="img" aria-label="Porcentaje de la ganancia consumido por el costo financiero"></canvas></div></div>
+    </section>
+    <div class="table-head"><h2>Datos mensuales</h2><p>El porcentaje y el resultado después de financiarte se calculan solos.</p></div>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Mes</th><th>Costo financiero</th><th>Ganancia</th><th>% financ.</th><th>Resultado</th><th></th></tr></thead>
+      <tbody id="tb-costofin"></tbody><tfoot><tr id="tf-costofin"></tr></tfoot></table></div>
+    <div class="addrow"><button onclick="addRow('costofin')">+ Agregar mes</button></div>
+  </div>
+
+  <!-- ===== TAB: SIMULADOR ===== -->
+  <div class="panel-tab" data-tab="simulador">
+    <p class="intro">Mové la ganancia y el costo financiero y mirá el ratio en vivo. Verde ≤15% (sano), ámbar 15-30%, rojo arriba de 30%.</p>
+    <div class="sim-card">
+      <div class="sim-row">
+        <div class="lh"><span>Ganancia mensual</span><span id="sim-gan-out">USD 26.000</span></div>
+        <input type="range" id="sim-gan" min="5000" max="70000" step="500" value="26000" oninput="updateSim()">
+      </div>
+      <div class="sim-row">
+        <div class="lh"><span>Costo financiero (devengado)</span><span id="sim-cos-out">USD 8.400</span></div>
+        <input type="range" id="sim-cos" min="0" max="20000" step="100" value="8400" oninput="updateSim()">
+      </div>
+      <div class="sim-out">
+        <div class="sim-ratio" id="sim-ratio">32%</div>
+        <span class="sim-badge" id="sim-badge">alto</span>
+      </div>
+      <div class="gauge">
+        <div style="flex:15;background:rgba(28,122,87,.45)"></div>
+        <div style="flex:15;background:rgba(169,128,46,.5)"></div>
+        <div style="flex:30;background:rgba(194,59,51,.45)"></div>
+        <div class="marker" id="sim-marker"></div>
+      </div>
+      <div class="gauge-lbl"><span>0%</span><span>15%</span><span>30%</span><span>60%+</span></div>
+      <div class="sim-help">
+        <div id="sim-h1"></div>
+        <div id="sim-h2"></div>
+        <div id="sim-h3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 5: HOJAS MENSUALES ===== -->
+  <div class="panel-tab" data-tab="hojas">
+    <p class="intro">Resumen de lo que contienen las hojas operativas mensuales (MAYO a JUNIO2). No son series limpias para graficar directo, pero acá están los conceptos clave que explican el resultado de fondo. Los números son del snapshot de Agosto como referencia.</p>
+    <div class="info-grid">
+      <div class="info-card"><h3>Inventario <span class="tag">semanal</span></h3>
+        <p style="font-size:13px;color:var(--ink2)">Inventario comparativo en USD, foto por semana.</p>
+        <ul><li>Semana 1 <b>140.957</b></li><li>Semana 2 <b>161.538</b></li><li>Semana 3 <b>145.533</b></li><li>Semana 4 <b>106.319</b></li></ul></div>
+      <div class="info-card"><h3>Financiación / palanca <span class="tag">pasivo</span></h3>
+        <p style="font-size:13px;color:var(--ink2)">Capital de terceros a tasa mensual en USD (2% a 9%).</p>
+        <ul><li>Capital financiado <b>~282k–423k</b></li><li>Interés mensual <b>~12.055</b></li><li>Stock virtual (9%) <b>~5.538</b></li><li>Financiación iPhones <b>~3.800</b></li></ul></div>
+      <div class="info-card"><h3>Deudas <span class="tag">pasivo</span></h3>
+        <p style="font-size:13px;color:var(--ink2)">Consignación y obligaciones fiscales.</p>
+        <ul><li>Consignación (Conesa) <b>44.000</b></li><li>Otros consignatarios <b>~10.000</b></li><li>AFIP <b>2 cuotas IVA</b></li></ul></div>
+      <div class="info-card"><h3>Regla 70/20/10 <span class="tag">presupuesto</span></h3>
+        <p style="font-size:13px;color:var(--ink2)">Objetivo de asignación: gastos / ahorro / deudas.</p>
+        <ul><li>70% gastos <b>ideal 19.600</b></li><li>10% ahorro <b>ideal 2.800</b></li><li>20% deudas <b>ideal 5.600</b></li></ul></div>
+    </div>
+    <div class="note">Cada hoja mensual también trae checklists de cierre (cobranzas, conciliación bancaria, ajuste de stock, etc.). Si querés, convertimos cualquiera de estos en una serie mes a mes (por ejemplo: evolución del inventario, costo financiero total, o nivel de deuda) y le sumamos su propia pestaña con gráfico.</div>
+  </div>
+
+  <footer>Los cambios quedan guardados en este navegador. Usá «Exportar» para tener un respaldo en archivo.</footer>
+</div>
+
+<script>
+const SEED = {
+  ganancia:[
+    {mes:'Diciembre',ganancia:44778,empresa:3584,personal:6492},
+    {mes:'Enero',ganancia:56000,empresa:2682,personal:2243},
+    {mes:'Febrero',ganancia:21419,empresa:5328,personal:5934},
+    {mes:'Marzo',ganancia:16855,empresa:5817,personal:6190},
+    {mes:'Abril',ganancia:32130,empresa:7244,personal:4302},
+    {mes:'Mayo',ganancia:26712,empresa:20110,personal:7730},
+    {mes:'Junio',ganancia:29400,empresa:16881,personal:7365},
+    {mes:'Julio',ganancia:36400,empresa:8800,personal:4100},
+    {mes:'Agosto',ganancia:28300,empresa:8002,personal:4499},
+    {mes:'Septiembre',ganancia:19300,empresa:6181,personal:2301}],
+  ventas:[
+    {mes:'Diciembre',compras:396000,ventas:284895},
+    {mes:'Enero',compras:314000,ventas:412234},
+    {mes:'Febrero',compras:143000,ventas:243196},
+    {mes:'Marzo',compras:129000,ventas:173731},
+    {mes:'Abril',compras:358000,ventas:410427},
+    {mes:'Mayo',compras:203000,ventas:304034},
+    {mes:'Junio',compras:408000,ventas:402861},
+    {mes:'Julio',compras:528600,ventas:564153},
+    {mes:'Agosto',compras:289300,ventas:359739}],
+  margen:[
+    {mes:'Diciembre',ventas:284895,ganancia:44778},
+    {mes:'Enero',ventas:412234,ganancia:56000},
+    {mes:'Febrero',ventas:243196,ganancia:21419},
+    {mes:'Marzo',ventas:173731,ganancia:16855},
+    {mes:'Abril',ventas:410427,ganancia:32130},
+    {mes:'Mayo',ventas:304034,ganancia:26712},
+    {mes:'Junio',ventas:402861,ganancia:29400},
+    {mes:'Julio',ventas:564153,ganancia:36400},
+    {mes:'Agosto',ventas:359739,ganancia:28300},
+    {mes:'Septiembre',ventas:238600,ganancia:19300},
+    {mes:'Octubre',ventas:227800,ganancia:18800},
+    {mes:'Noviembre',ventas:156900,ganancia:17200},
+    {mes:'Diciembre 2',ventas:245000,ganancia:21900},
+    {mes:'Enero 2',ventas:284200,ganancia:24000},
+    {mes:'Febrero 2',ventas:257300,ganancia:21700},
+    {mes:'Marzo 2',ventas:379400,ganancia:32200}],
+  volumen:[
+    {mes:'Septiembre',unidades:2742,ventas:318},
+    {mes:'Octubre',unidades:2634,ventas:426},
+    {mes:'Noviembre',unidades:2796,ventas:496},
+    {mes:'Diciembre',unidades:2676,ventas:496},
+    {mes:'Enero',unidades:3654,ventas:407},
+    {mes:'Febrero',unidades:2027,ventas:291},
+    {mes:'Marzo',unidades:1933,ventas:316},
+    {mes:'Abril',unidades:3221,ventas:387},
+    {mes:'Mayo',unidades:3216,ventas:356},
+    {mes:'Junio',unidades:1438,ventas:162},
+    {mes:'Julio',unidades:4286,ventas:443},
+    {mes:'Agosto',unidades:4200,ventas:332},
+    {mes:'Septiembre 2',unidades:2424,ventas:279},
+    {mes:'Octubre 2',unidades:1746,ventas:240},
+    {mes:'Noviembre 2',unidades:979,ventas:151},
+    {mes:'Diciembre 2',unidades:1767,ventas:168}],
+  costofin:[
+    {mes:'Mayo',costo:12768,ganancia:26712},
+    {mes:'Junio',costo:13169,ganancia:29400},
+    {mes:'Julio',costo:14879,ganancia:36400},
+    {mes:'Agosto',costo:15003,ganancia:28300},
+    {mes:'Septiembre',costo:12103,ganancia:19300},
+    {mes:'Octubre',costo:12103,ganancia:18800},
+    {mes:'Noviembre',costo:12539,ganancia:17200},
+    {mes:'Diciembre',costo:11313,ganancia:21900},
+    {mes:'Enero',costo:11313,ganancia:24000},
+    {mes:'Febrero',costo:11425,ganancia:21700},
+    {mes:'Marzo',costo:8325,ganancia:32200},
+    {mes:'Abril',costo:8325,ganancia:26400}]
+};
+const KEY='dash_tecnodist_v2';
+function load(){try{const s=localStorage.getItem(KEY);if(s){const d=JSON.parse(s);
+  for(const k in SEED)if(!d[k])d[k]=JSON.parse(JSON.stringify(SEED[k]));return d;}}catch(e){}
+  return JSON.parse(JSON.stringify(SEED));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+let data=load();
+
+const nf=new Intl.NumberFormat('es-AR',{maximumFractionDigits:0});
+const money=v=>(v<0?'-':'')+'USD '+nf.format(Math.abs(Math.round(v)));
+const fmtAxis=v=>(v<0?'-':'')+nf.format(Math.abs(Math.round(v)));
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+// column specs per tab
+const SPEC={
+  ganancia:{inputs:[['mes','text'],['ganancia','num'],['empresa','num'],['personal','num']],
+    calc:[r=>nf.format(Math.round((+r.empresa||0)+(+r.personal||0))),
+          r=>{const v=(+r.ganancia||0)-((+r.empresa||0)+(+r.personal||0));return{txt:money(v),pos:v>=0};}]},
+  ventas:{inputs:[['mes','text'],['compras','num'],['ventas','num']],
+    calc:[r=>{const v=(+r.ventas||0)-(+r.compras||0);return{txt:money(v),pos:v>=0};},'_saldo']},
+  margen:{inputs:[['mes','text'],['ventas','num'],['ganancia','num']],
+    calc:[r=>{const v=(+r.ventas||0)?(+r.ganancia||0)/(+r.ventas||0):0;return{txt:(v*100).toFixed(1)+'%',pos:true,plain:true};}]},
+  volumen:{inputs:[['mes','text'],['unidades','num'],['ventas','num']],
+    calc:[r=>{const v=(+r.ventas||0)?(+r.unidades||0)/(+r.ventas||0):0;return v.toFixed(1);}]},
+  costofin:{inputs:[['mes','text'],['costo','num'],['ganancia','num']],
+    calc:[r=>{const g=+r.ganancia||0;const v=g?(+r.costo||0)/g*100:0;return{txt:v.toFixed(0)+'%',plain:true};},
+          r=>{const v=(+r.ganancia||0)-(+r.costo||0);return{txt:money(v),pos:v>=0};}]}
+};
+
+function rowHTML(tab,r,i){
+  const sp=SPEC[tab];let h='';
+  sp.inputs.forEach(([k,t])=>{
+    if(t==='text')h+=`<td><input class="mes-in" value="${r[k]??''}" oninput="upd('${tab}',${i},'${k}','text',this.value)"></td>`;
+    else h+=`<td><input class="num-in" type="number" value="${r[k]??''}" oninput="upd('${tab}',${i},'${k}','num',this.value)"></td>`;
+  });
+  return h;
+}
+function calcCells(tab){
+  // returns array of cell html for the calc columns, computed with running state
+  const arr=data[tab];let saldo=0;
+  return arr.map(r=>{
+    const sp=SPEC[tab];let cells=[];
+    sp.calc.forEach(fn=>{
+      if(fn==='_saldo'){saldo+=(+r.ventas||0)-(+r.compras||0);
+        cells.push(`<td class="res ${saldo>=0?'pos':'neg'}">${money(saldo)}</td>`);return;}
+      const out=fn(r);
+      if(typeof out==='string')cells.push(`<td class="calc">${out}</td>`);
+      else if(out.plain)cells.push(`<td class="calc">${out.txt}</td>`);
+      else cells.push(`<td class="res ${out.pos?'pos':'neg'}">${out.txt}</td>`);
+    });
+    return cells;
+  });
+}
+function renderTable(tab){
+  const tb=document.getElementById('tb-'+tab);tb.innerHTML='';
+  const cc=calcCells(tab);
+  data[tab].forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=rowHTML(tab,r,i)+cc[i].join('')+
+      `<td><button class="del" title="Eliminar" onclick="delRow('${tab}',${i})">×</button></td>`;
+    tb.appendChild(tr);
+  });
+  renderFoot(tab);
+}
+function renderFoot(tab){
+  const a=data[tab];const sum=k=>a.reduce((s,r)=>s+(+r[k]||0),0);
+  let html='';
+  if(tab==='ganancia'){const sG=sum('ganancia'),sE=sum('empresa'),sP=sum('personal'),sT=sE+sP,sR=sG-sT;
+    html=`<td>Acumulado</td><td>${nf.format(sG)}</td><td>${nf.format(sE)}</td><td>${nf.format(sP)}</td><td>${nf.format(sT)}</td><td class="${sR>=0?'pos':'neg'}">${money(sR)}</td><td></td>`;}
+  else if(tab==='ventas'){const sC=sum('compras'),sV=sum('ventas'),d=sV-sC;
+    html=`<td>Acumulado</td><td>${nf.format(sC)}</td><td>${nf.format(sV)}</td><td class="${d>=0?'pos':'neg'}">${money(d)}</td><td></td><td></td>`;}
+  else if(tab==='margen'){const sV=sum('ventas'),sG=sum('ganancia'),m=sV?sG/sV*100:0;
+    html=`<td>Total</td><td>${nf.format(sV)}</td><td>${nf.format(sG)}</td><td class="calc">${m.toFixed(1)}%</td><td></td>`;}
+  else if(tab==='volumen'){const sU=sum('unidades'),sV=sum('ventas'),t=sV?sU/sV:0;
+    html=`<td>Total</td><td>${nf.format(sU)}</td><td>${nf.format(sV)}</td><td class="calc">${t.toFixed(1)}</td><td></td>`;}
+  else if(tab==='costofin'){const sC=sum('costo'),sG=sum('ganancia'),p=sG?sC/sG*100:0,r=sG-sC;
+    html=`<td>Acumulado</td><td>${nf.format(sC)}</td><td>${nf.format(sG)}</td><td class="calc">${p.toFixed(0)}%</td><td class="${r>=0?'pos':'neg'}">${money(r)}</td><td></td>`;}
+  document.getElementById('tf-'+tab).innerHTML=html;
+}
+function renderCards(tab){
+  const a=data[tab];const sum=k=>a.reduce((s,r)=>s+(+r[k]||0),0);const el=document.getElementById('cards-'+tab);
+  let c=[];
+  if(tab==='ganancia'){const sG=sum('ganancia'),sT=sum('empresa')+sum('personal'),sR=sG-sT;const n=a.length;
+    c=[['Ganancia acumulada',money(sG),'',n+' meses'],['Gastos acumulados',money(sT),'','empresa + personal'],
+       ['Resultado neto',money(sR),sR>=0?'pos':'neg',sR>=0?'en positivo':'en rojo'],
+       ['Promedio mensual',money(n?sR/n:0),(n&&sR/n>=0)?'pos':'neg','resultado por mes']];}
+  else if(tab==='ventas'){const sC=sum('compras'),sV=sum('ventas'),saldo=sV-sC;
+    c=[['Ventas acumuladas',money(sV),'','en USD'],['Compras acumuladas',money(sC),'','en USD'],
+       ['Saldo acumulado',money(saldo),saldo>=0?'pos':'neg','ventas − compras'],
+       ['Ratio v/c',(sC?(sV/sC).toFixed(2):'—')+'×',sV>=sC?'pos':'neg','vendido por comprado']];}
+  else if(tab==='margen'){const sV=sum('ventas'),sG=sum('ganancia');const last=a[a.length-1];
+    const lm=last&&last.ventas?last.ganancia/last.ventas*100:0;const am=sV?sG/sV*100:0;
+    const first=a[0];const fm=first&&first.ventas?first.ganancia/first.ventas*100:0;
+    c=[['Margen promedio',am.toFixed(1)+'%','','sobre el período'],['Margen último mes',lm.toFixed(1)+'%',lm>=am?'pos':'neg',last?last.mes:''],
+       ['Margen inicial',fm.toFixed(1)+'%','',first?first.mes:''],['Variación',(lm-fm>=0?'+':'')+(lm-fm).toFixed(1)+' pp',(lm-fm)>=0?'pos':'neg','inicio vs fin']];}
+  else if(tab==='volumen'){const sU=sum('unidades'),sV=sum('ventas');const n=a.length;
+    c=[['Unidades acumuladas',nf.format(sU),'',n+' meses'],['Operaciones',nf.format(sV),'','cantidad de ventas'],
+       ['Unid. por venta',(sV?sU/sV:0).toFixed(1),'','promedio'],['Prom. mensual',nf.format(n?sU/n:0),'','unidades por mes']];}
+  else if(tab==='costofin'){const sC=sum('costo'),sG=sum('ganancia');const ap=sG?sC/sG*100:0;
+    const last=a[a.length-1];const lastPct=last&&last.ganancia?(+last.costo||0)/(+last.ganancia||1)*100:0;
+    c=[['Costo financiero acum.',money(sC),'',a.length+' meses'],['Ganancia acumulada',money(sG),'','antes de financiación'],
+       ['Se va en financiarte (último mes)',lastPct.toFixed(0)+'%',lastPct>30?'neg':'',last?last.mes:''],
+       ['Promedio del período',ap.toFixed(0)+'%',ap>30?'neg':'','los '+a.length+' meses']];}
+  el.innerHTML=c.map(x=>`<div class="card"><div class="lab">${x[0]}</div><div class="val ${x[2]}">${x[1]}</div><div class="sub">${x[3]}</div></div>`).join('');
+}
+
+let charts={};
+function destroyTab(tab){Object.keys(charts).forEach(k=>{if(k.startsWith(tab+'_')){charts[k].destroy();delete charts[k];}});}
+function axisOpt(){const ink2=css('--ink2'),line=css('--line');
+  return{ticks:{color:ink2,font:{family:'Spline Sans Mono',size:11}},grid:{color:line}};}
+function lbls(tab){return data[tab].map(r=>(r.mes||'').replace(/ 2$/,'·').slice(0,4));}
+
+function buildCharts(tab){
+  destroyTab(tab);
+  const green=css('--green'),coral=css('--coral'),blue=css('--blue'),gold=css('--gold'),red=css('--red');
+  const ax=axisOpt(),L=lbls(tab);
+  const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+  if(tab==='ganancia'){
+    const gan=data.ganancia.map(r=>+r.ganancia||0),gas=data.ganancia.map(r=>(+r.empresa||0)+(+r.personal||0)),
+      rs=data.ganancia.map(r=>(+r.ganancia||0)-((+r.empresa||0)+(+r.personal||0)));
+    charts.ganancia_combo=new Chart(c('c_combo'),{data:{labels:L,datasets:[
+      {type:'bar',label:'Ganancia',data:gan,backgroundColor:green,borderRadius:3,order:2},
+      {type:'bar',label:'Gastos',data:gas,backgroundColor:coral,borderRadius:3,order:2},
+      {type:'line',label:'Resultado',data:rs,borderColor:blue,backgroundColor:blue,borderWidth:2.5,tension:.15,order:1,
+        pointRadius:4,pointStyle:'rectRot',pointBackgroundColor:rs.map(v=>v<0?red:blue)}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.dataset.label+': '+money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+    charts.ganancia_res=new Chart(c('c_res'),{type:'bar',data:{labels:L,datasets:[{data:rs,borderRadius:4,backgroundColor:rs.map(v=>v<0?red:green)}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+  }
+  else if(tab==='ventas'){
+    const co=data.ventas.map(r=>+r.compras||0),ve=data.ventas.map(r=>+r.ventas||0);
+    let s=0;const saldo=data.ventas.map(r=>{s+=(+r.ventas||0)-(+r.compras||0);return s;});
+    charts.ventas_cv=new Chart(c('c_cv'),{type:'bar',data:{labels:L,datasets:[
+      {label:'Ventas',data:ve,backgroundColor:green,borderRadius:3},
+      {label:'Compras',data:co,backgroundColor:coral,borderRadius:3}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.dataset.label+': '+money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+    charts.ventas_saldo=new Chart(c('c_saldo'),{type:'line',data:{labels:L,datasets:[
+      {label:'Saldo',data:saldo,borderColor:blue,borderWidth:2.5,tension:.2,fill:true,
+        backgroundColor:'rgba(44,94,143,.10)',pointRadius:3,pointBackgroundColor:saldo.map(v=>v<0?red:blue)}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+  }
+  else if(tab==='margen'){
+    const ve=data.margen.map(r=>+r.ventas||0),ga=data.margen.map(r=>+r.ganancia||0),
+      mg=data.margen.map(r=>(+r.ventas||0)?(+r.ganancia||0)/(+r.ventas||0)*100:0);
+    charts.margen_margen=new Chart(c('c_margen'),{type:'line',data:{labels:L,datasets:[
+      {label:'Margen',data:mg,borderColor:gold,borderWidth:2.5,tension:.25,pointRadius:3,pointBackgroundColor:gold,
+        backgroundColor:'rgba(169,128,46,.10)',fill:true}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.parsed.y.toFixed(1)+'%'}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:v=>v+'%'}}}}});
+    charts.margen_gv=new Chart(c('c_gv'),{data:{labels:L,datasets:[
+      {type:'bar',label:'Ventas',data:ve,backgroundColor:green,borderRadius:3,order:2},
+      {type:'line',label:'Ganancia',data:ga,borderColor:coral,backgroundColor:coral,borderWidth:2.5,tension:.15,order:1,pointRadius:3}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.dataset.label+': '+money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+  }
+  else if(tab==='volumen'){
+    const un=data.volumen.map(r=>+r.unidades||0),vt=data.volumen.map(r=>+r.ventas||0),
+      tk=data.volumen.map(r=>(+r.ventas||0)?(+r.unidades||0)/(+r.ventas||0):0);
+    charts.volumen_vol=new Chart(c('c_vol'),{data:{labels:L,datasets:[
+      {type:'bar',label:'Unidades',data:un,backgroundColor:blue,borderRadius:3,yAxisID:'y',order:2},
+      {type:'line',label:'Cant. ventas',data:vt,borderColor:gold,backgroundColor:gold,borderWidth:2.5,tension:.15,yAxisID:'y1',order:1,pointRadius:3}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},
+          y:{...ax,position:'left',ticks:{...ax.ticks,callback:fmtAxis}},
+          y1:{...ax,position:'right',grid:{drawOnChartArea:false},ticks:{...ax.ticks,callback:fmtAxis}}}}});
+    charts.volumen_ticket=new Chart(c('c_ticket'),{type:'line',data:{labels:L,datasets:[
+      {label:'Unid/venta',data:tk,borderColor:coral,borderWidth:2.5,tension:.25,pointRadius:3,pointBackgroundColor:coral,
+        backgroundColor:'rgba(191,78,44,.10)',fill:true}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.parsed.y.toFixed(1)+' u/venta'}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks}}}}});
+  }
+  else if(tab==='costofin'){
+    const co=data.costofin.map(r=>+r.costo||0),ga=data.costofin.map(r=>+r.ganancia||0),
+      pc=data.costofin.map(r=>(+r.ganancia||0)?(+r.costo||0)/(+r.ganancia||0)*100:0);
+    charts.costofin_cf1=new Chart(c('c_cf1'),{data:{labels:L,datasets:[
+      {type:'bar',label:'Ganancia',data:ga,backgroundColor:green,borderRadius:3,order:2},
+      {type:'line',label:'Costo financiero',data:co,borderColor:red,backgroundColor:red,borderWidth:2.5,tension:.15,order:1,
+        pointRadius:3,pointBackgroundColor:red}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.dataset.label+': '+money(cx.parsed.y)}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:fmtAxis}}}}});
+    charts.costofin_cf2=new Chart(c('c_cf2'),{type:'line',data:{labels:L,datasets:[
+      {label:'% financ.',data:pc,borderColor:coral,borderWidth:2.5,tension:.25,pointRadius:3,pointBackgroundColor:coral,
+        backgroundColor:'rgba(191,78,44,.10)',fill:true}]},
+      options:{...base,plugins:{legend:{display:false},tooltip:{callbacks:{label:cx=>cx.parsed.y.toFixed(0)+'%'}}},
+        scales:{x:{...ax,ticks:{...ax.ticks,autoSkip:false},grid:{display:false}},y:{...ax,ticks:{...ax.ticks,callback:v=>v+'%'}}}}});
+  }
+}
+function c(id){return document.getElementById(id);}
+
+function updateSim(){
+  const g=+document.getElementById('sim-gan').value, c=+document.getElementById('sim-cos').value;
+  const ratio=g?c/g*100:0;
+  document.getElementById('sim-gan-out').textContent='USD '+nf.format(g);
+  document.getElementById('sim-cos-out').textContent='USD '+nf.format(c);
+  const col=ratio<=15?'var(--green)':(ratio<=30?'var(--gold)':'var(--red)');
+  const r=document.getElementById('sim-ratio'); r.textContent=ratio.toFixed(0)+'%'; r.style.color=col;
+  const b=document.getElementById('sim-badge'); b.textContent=ratio<=15?'sano':(ratio<=30?'atención':'alto');
+  b.style.color=col; b.style.background=ratio<=15?'rgba(28,122,87,.12)':(ratio<=30?'rgba(169,128,46,.14)':'rgba(194,59,51,.12)');
+  document.getElementById('sim-marker').style.left=Math.min(ratio,60)/60*100+'%';
+  document.getElementById('sim-h1').textContent='Para llegar a 15% con este costo: ganancia ≥ USD '+nf.format(Math.round(c/0.15));
+  document.getElementById('sim-h2').textContent='Para llegar a 15% con esta ganancia: costo ≤ USD '+nf.format(Math.round(g*0.15));
+  const acc=c-5800;
+  document.getElementById('sim-h3').textContent= acc>0
+    ? 'Si pagás 5.800/mes, se acumulan USD '+nf.format(Math.round(acc))+' de deuda por mes'
+    : 'Con USD '+nf.format(c)+' de costo, pagando 5.800/mes cubrís todo (no se acumula deuda)';
+}
+
+function renderKPIs(){
+  const m=data.margen,g=data.ganancia,v=data.ventas,vo=data.volumen,cf=data.costofin;
+  const sum=(a,k)=>a.reduce((s,r)=>s+(+r[k]||0),0);
+  const C={verde:'var(--green)',gold:'var(--gold)',rojo:'var(--red)',obj:'var(--blue)'};
+  const BG={verde:'rgba(28,122,87,.12)',gold:'rgba(169,128,46,.14)',rojo:'rgba(194,59,51,.12)',obj:'rgba(44,94,143,.12)'};
+  const TXT={verde:'sano',gold:'atención',rojo:'problema',obj:'objetivo'};
+  // computations
+  const mV=sum(m,'ventas'),mG=sum(m,'ganancia'),margC=mV?mG/mV*100:0;
+  const lm=m[m.length-1],lmpct=lm&&lm.ventas?lm.ganancia/lm.ventas*100:0;
+  const f0=m[0],f0pct=f0&&f0.ventas?f0.ganancia/f0.ventas*100:0;
+  const cfC=sum(cf,'costo'),cfG=sum(cf,'ganancia'),finPct=cfG?cfC/cfG*100:0;
+  const gRes=g.reduce((s,r)=>s+((+r.ganancia||0)-((+r.empresa||0)+(+r.personal||0))),0);
+  const posM=g.filter(r=>((+r.ganancia||0)-((+r.empresa||0)+(+r.personal||0)))>0).length;
+  const posPct=g.length?posM/g.length*100:0;
+  const vV=sum(v,'ventas'),vC=sum(v,'compras'),ratio=vC?vV/vC:0;
+  const voU=sum(vo,'unidades'),voV=sum(vo,'ventas'),ticket=voV?voU/voV:0,opsAvg=vo.length?voV/vo.length:0;
+  const avgV=m.length?mV/m.length:0,BE=305853,bePct=BE?avgV/BE*100:0;
+  const lastCf=cf[cf.length-1]||{costo:0,ganancia:1};
+  const devC=+lastCf.costo||0, devG=+lastCf.ganancia||1, devPct=devG?devC/devG*100:0;
+  const CASH=5800/8400, cajaPct=devPct*CASH, accumMo=devC*(1-CASH);
+  // status helpers
+  const band=(val,gv,wv,higher)=>{ // higher=true: bigger is better
+    if(higher) return val>=gv?'verde':(val>=wv?'gold':'rojo');
+    return val<=gv?'verde':(val<=wv?'gold':'rojo');};
+  const money=v=>(v<0?'-':'')+'USD '+nf.format(Math.abs(Math.round(v)));
+  const pct=x=>x.toFixed(1)+'%';
+
+  const sections=[
+    ['Rentabilidad',[
+      {lab:'Margen de contribución',val:pct(margC),st:band(margC,12,8,true),tgt:'Objetivo ≥ 12%',
+        note:'Lo que queda de cada venta para cubrir estructura. Hoy comprime contra el dólar.'},
+      {lab:'Margen último mes',val:pct(lmpct),st:band(lmpct,12,8,true),tgt:(lm?lm.mes:'')+' · inicial '+pct(f0pct),
+        note:'Cayó '+(lmpct-f0pct).toFixed(1)+' pp desde el primer mes del período.'},
+      {lab:'Meses en positivo',val:posPct.toFixed(0)+'%',st:band(posPct,80,60,true),tgt:posM+' de '+g.length+' meses',
+        note:'Cuántos meses el resultado operativo dio positivo.'},
+      {lab:'Resultado operativo acum.',val:money(gRes),st:gRes>0?'verde':'rojo',tgt:'Antes de costo financiero',
+        note:'Ganancia de la operación pura, sin intereses ni retiros.'}
+    ]],
+    ['Caja y financiación',[
+      {lab:'Costo financiero devengado',val:pct(devPct),st:band(devPct,15,30,false),tgt:'Objetivo ≤ 15% · último mes',
+        note:'Lo que cuesta de verdad estar financiado, lo pagues o no. El número correcto para rentabilidad.'},
+      {lab:'Costo financiero en caja',val:pct(cajaPct),st:band(cajaPct,15,30,false),tgt:'Lo que pagás (5.800 de 8.400)',
+        note:'Lo que efectivamente sale de la caja. El resto no pagado se acumula a deuda.'},
+      {lab:'Deuda que se acumula',val:money(accumMo)+'/mes',st:accumMo>0?'gold':'verde',tgt:'devengado − pagado',
+        note:'Lo que no pagás se suma a tu deuda cada mes (sin interés compuesto, no hace bola de nieve).'},
+      {lab:'Facturación vs equilibrio',val:bePct.toFixed(0)+'%',st:band(bePct,110,100,true),tgt:'Equilibrio ≈ '+nf.format(BE),
+        note:'Tu facturación promedio contra el punto de equilibrio. Apenas lo superás.'},
+      {lab:'Ratio ventas / compras',val:ratio.toFixed(2)+'×',st:band(ratio,1,0.9,true),tgt:'Objetivo ≥ 1,0×',
+        note:'>1 = vendés más de lo que comprás (desestockeás); <1 = stockeás.'}
+    ]],
+    ['Operación',[
+      {lab:'Ticket promedio',val:ticket.toFixed(1),st:'gold',tgt:'unidades por venta',
+        note:'Bajó con el tiempo: más reventa chico, menos mayorista.'},
+      {lab:'Operaciones por mes',val:nf.format(opsAvg),st:'gold',tgt:'promedio de ventas/mes',
+        note:'Carga operativa: más tickets = más picking, empaque y atención.'}
+    ]],
+    ['Objetivos para pasar a verde',[
+      {lab:'Costo financiero → 15%',val:'USD '+nf.format(Math.round(devC/0.15)),st:'obj',tgt:'ganancia mensual, con costo de hoy',
+        note:'O bajar el costo a USD '+nf.format(Math.round(devG*0.15))+' manteniendo la ganancia actual. Achicar el costo es el camino más realista.'},
+      {lab:'Margen de contribución → 12%',val:'USD '+nf.format(Math.round(avgV*0.12))+'/mes',st:'obj',tgt:'ganancia, con tu venta promedio',
+        note:'Hoy '+margC.toFixed(1)+'%. Hay que sumar '+(12-margC).toFixed(1)+' pp vía precio o mix (más mayorista de margen, menos remate).'},
+      {lab:'Llegar al equilibrio',val:'USD '+nf.format(BE),st:'obj',tgt:'facturación mensual',
+        note:(avgV>=BE?('Ya lo superás en promedio (por USD '+nf.format(Math.round(avgV-BE))+').'):('Te faltan ~USD '+nf.format(Math.round(BE-avgV))+'/mes sobre tu promedio.'))},
+      {lab:'Ratio ventas/compras → 1,0×',val:(ratio>=1?'Cumplido':'USD '+nf.format(Math.round(vC))),st:'obj',tgt:(ratio>=1?'ya vendés más de lo que comprás':'ventas para igualar compras'),
+        note:(ratio>=1?'Mantené el desestockeo: liberás caja.':'Vender más o comprar menos hasta equilibrar el ratio.')}
+    ]]
+  ];
+  let html='';
+  sections.forEach(([title,cards])=>{
+    html+=`<div class="kpi-section"><h3>${title}</h3><div class="kpi-grid">`;
+    cards.forEach(k=>{
+      html+=`<div class="kpi"><span class="badge" style="color:${C[k.st]};background:${BG[k.st]}">${TXT[k.st]}</span>`+
+        `<div class="klab">${k.lab}</div><div class="kval" style="color:${C[k.st]}">${k.val}</div>`+
+        `<div class="ktarget">${k.tgt}</div><div class="knote">${k.note}</div></div>`;
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('kpi-body').innerHTML=html;
+}
+
+function renderTab(tab){renderCards(tab);renderTable(tab);buildCharts(tab);}
+
+function upd(tab,i,k,t,v){data[tab][i][k]=t==='text'?v:(v===''?'':+v);save();
+  renderCards(tab);buildCharts(tab);
+  // recompute calc cells for the table without rebuilding inputs (keep focus)
+  const tb=document.getElementById('tb-'+tab);const cc=calcCells(tab);
+  for(let j=0;j<tb.children.length;j++){const tr=tb.children[j];const nIn=SPEC[tab].inputs.length;
+    const cells=cc[j];for(let m=0;m<cells.length;m++){const cell=tr.children[nIn+m];
+      const tmp=document.createElement('tr');tmp.innerHTML=cells[m];const nc=tmp.firstChild;
+      cell.className=nc.className;cell.textContent=nc.textContent;}}
+  renderFoot(tab);
+}
+function addRow(tab){const blank={mes:'Nuevo'};SPEC[tab].inputs.forEach(([k,t])=>{if(k!=='mes')blank[k]='';});
+  data[tab].push(blank);save();renderTab(tab);}
+function delRow(tab,i){data[tab].splice(i,1);save();renderTab(tab);}
+function resetData(){if(confirm('¿Restaurar todos los datos originales? Se pierde lo editado.')){
+  data=JSON.parse(JSON.stringify(SEED));save();renderTab(active);}}
+function exportJSON(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='panel_financiero.json';a.click();URL.revokeObjectURL(a.href);}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d&&typeof d==='object'){data=d;
+    for(const k in SEED)if(!data[k])data[k]=JSON.parse(JSON.stringify(SEED[k]));save();renderTab(active);}else alert('Formato no válido.');}
+    catch(err){alert('No se pudo leer el archivo.');}};rd.readAsText(f);e.target.value='';}
+
+const TABS=[['kpis','KPIs'],['ganancia','Ganancia y gastos'],['ventas','Ventas y compras'],['margen','Margen'],['volumen','Volumen'],['costofin','Costo financiero'],['simulador','Simulador'],['hojas','Hojas mensuales']];
+let active='kpis';
+function buildNav(){const nav=document.getElementById('nav');
+  nav.innerHTML=TABS.map(([k,n])=>`<div class="tab ${k===active?'active':''}" data-k="${k}" onclick="switchTab('${k}')">${n}</div>`).join('');}
+function switchTab(k){active=k;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.k===k));
+  document.querySelectorAll('.panel-tab').forEach(p=>p.classList.toggle('active',p.dataset.tab===k));
+  if(k==='kpis')renderKPIs();
+  else if(k!=='hojas')buildCharts(k);}
+buildNav();
+['ganancia','ventas','margen','volumen','costofin'].forEach(renderTab);
+renderKPIs();
+updateSim();
+switchTab('kpis');
+</script>
+</body>
+</html>
