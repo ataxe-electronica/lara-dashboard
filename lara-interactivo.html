@@ -317,6 +317,21 @@ select option{background:var(--white)}
       <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:14px">Cuadre general</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:16px" id="cuadre-grid"></div>
       <div id="cuadre-resultado"></div>
+
+      <!-- CONTROL DE CAJA CON FECHA -->
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <div>
+            <div style="font-size:13px;font-weight:700">Control de caja</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--ink3);margin-top:1px">Guardá una foto del estado de caja y el cuadre en una fecha</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input id="control-fecha" type="date" style="background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);color:var(--ink);font-size:13px;padding:8px 10px;font-family:var(--mono);outline:none"/>
+            <button onclick="guardarControlCaja()" style="padding:8px 16px;border-radius:var(--r);border:none;background:var(--ink);color:#fff;cursor:pointer;font-size:13px;font-family:var(--font);font-weight:600;white-space:nowrap">Guardar control</button>
+          </div>
+        </div>
+        <div id="control-historial"></div>
+      </div>
     </div>
 
     <!-- MACHETE: EN TRÁNSITO -->
@@ -783,6 +798,7 @@ let ST={
   clienteNotas:{},
   cobranzasHistorial:[],
   saldoCobranzas:0,
+  controlesCaja:[],
   cobroHistorial:[]
 };
 
@@ -1288,7 +1304,7 @@ function getCaja(){
 }
 
 function renderCuadre(){
-  var CAPITAL_INICIAL = 124900;
+  var CAPITAL_INICIAL = 115900;
   var totPC=ST.lotes.reduce(function(a,l){return a+porCobrar(l);},0);
   var totGan=ST.lotes.reduce(function(a,l){return a+l.ganancia;},0);
   var totC=ST.lotes.reduce(function(a,l){return a+l.compra;},0);
@@ -1487,6 +1503,7 @@ function saveState(){
       clienteNotas: ST.clienteNotas||{},
       cobranzasHistorial: ST.cobranzasHistorial||[],
       saldoCobranzas: ST.saldoCobranzas||0,
+      controlesCaja: ST.controlesCaja||[],
       metaLara: (document.getElementById('meta-lara')||{}).value||'',
       metaLara: (document.getElementById('meta-lara')||{}).value||'',
       cobranzasHistorial: ST.cobranzasHistorial||[],
@@ -1536,6 +1553,7 @@ function loadState(){
     if(saved.clienteNotas)ST.clienteNotas=saved.clienteNotas;
     if(saved.cobranzasHistorial)ST.cobranzasHistorial=saved.cobranzasHistorial;
     if(typeof saved.saldoCobranzas==='number')ST.saldoCobranzas=saved.saldoCobranzas;
+    if(saved.controlesCaja)ST.controlesCaja=saved.controlesCaja;
     if(saved.metaLara){var ml=document.getElementById('meta-lara');if(ml)ml.value=saved.metaLara;}
     if(saved.transitoItems)ST.transitoItems=saved.transitoItems;
   }catch(e){console.warn('No se pudo cargar estado:',e);}
@@ -1725,7 +1743,7 @@ function renderTransito(){
 }
 
 function renderTacometro(){
-  var CAPITAL_INICIAL=124900;
+  var CAPITAL_INICIAL=115900;
   var totGanLara=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
   var objetivo=CAPITAL_INICIAL+totGanLara;
 
@@ -2294,11 +2312,92 @@ function aplicarSaldo(){
   alert('Aplicado '+fU(aplicar)+' al lote L'+loteId+'. Saldo restante: '+fU(ST.saldoCobranzas));
 }
 
+function guardarControlCaja(){
+  var fechaEl=document.getElementById('control-fecha');
+  var fecha=fechaEl&&fechaEl.value?fechaEl.value:hoy();
+  // Convertir a DD/MM/AAAA
+  var p=fecha.split('-');
+  var fechaStr=p.length===3?p[2]+'/'+p[1]+'/'+p[0]:fecha;
+
+  var CAPITAL_INICIAL=115900;
+  var caja=getCaja();
+  var totGanLaraC=ST.lotes.reduce(function(a,l){return a+ganLara(l);},0);
+  var pcLara=ST.lotes.reduce(function(a,l){
+    var pc=porCobrar(l);
+    if(pc<=0||l.venta<=0)return a;
+    var prop=pc/l.venta;
+    return a+(l.compra*prop)+(l.ganancia*prop*(getPctLara(l)/100));
+  },0);
+  var objetivo=CAPITAL_INICIAL+totGanLaraC;
+  var tienes=caja+pcLara;
+  var diferencia=tienes-objetivo;
+  var cerraba=Math.abs(diferencia)<1;
+
+  // Snapshot de cada cuenta de caja
+  var cuentas={};
+  ['caja-efectivo','caja-santander','caja-galicia','caja-mp','caja-frances','caja-usdt','caja-otro'].forEach(function(id){
+    var elc=document.getElementById(id);
+    cuentas[id]=elc?(parseFloat(elc.value)||0):0;
+  });
+
+  if(!ST.controlesCaja)ST.controlesCaja=[];
+  ST.controlesCaja.push({
+    id:Date.now(),fecha:fechaStr,cajaTotal:caja,cuentas:cuentas,
+    porCobrarLara:pcLara,objetivo:objetivo,diferencia:diferencia,cerraba:cerraba
+  });
+
+  saveState();
+  if(ONLINE_MODE)saveToSupabase('control_caja',ST.controlesCaja[ST.controlesCaja.length-1]);
+  renderControlHistorial();
+  alert('Control de caja guardado para el '+fechaStr+'.');
+}
+
+function eliminarControlCaja(id){
+  if(!confirm('Eliminar este control de caja?'))return;
+  ST.controlesCaja=ST.controlesCaja.filter(function(c){return c.id!==id;});
+  saveState();
+  if(ONLINE_MODE)saveToSupabase('control_caja_delete',{id:id});
+  renderControlHistorial();
+}
+
+function renderControlHistorial(){
+  var el=document.getElementById('control-historial');
+  if(!el)return;
+  if(!ST.controlesCaja||!ST.controlesCaja.length){
+    el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--ink3);padding:4px 0">Sin controles guardados todavía.</div>';
+    return;
+  }
+  var ordenados=ST.controlesCaja.slice().sort(function(a,b){
+    var pa=a.fecha.split('/'),pb=b.fecha.split('/');
+    return new Date(pb[2],pb[1]-1,pb[0])-new Date(pa[2],pa[1]-1,pa[0]);
+  });
+  el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr>'+
+      '<th style="text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:400">Fecha</th>'+
+      '<th style="text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:400">Caja</th>'+
+      '<th style="text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:400">Por cobrar (Lara)</th>'+
+      '<th style="text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:400">Objetivo</th>'+
+      '<th style="text-align:center;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--ink3);padding:6px 8px;border-bottom:1px solid var(--border);font-weight:400">Cuadre</th>'+
+      '<th style="border-bottom:1px solid var(--border)"></th>'+
+    '</tr></thead><tbody>'+
+    ordenados.map(function(c){
+      return '<tr>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);font-family:var(--mono);font-weight:600">'+c.fecha+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);color:var(--green)">'+fU(c.cajaTotal)+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);color:var(--red)">'+fU(c.porCobrarLara)+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono)">'+fU(c.objetivo)+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:center">'+(c.cerraba?'<span class="badge b-ok">Cerraba</span>':'<span class="badge '+(c.diferencia>0?'b-info':'b-warn')+'">'+(c.diferencia>0?'+':'')+fU(c.diferencia)+'</span>')+'</td>'+
+        '<td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right"><button onclick="eliminarControlCaja('+c.id+')" style="padding:2px 8px;border-radius:var(--r);border:1px solid var(--red-light);background:var(--red-bg);color:var(--red);cursor:pointer;font-size:10px;font-family:var(--mono)">x</button></td>'+
+      '</tr>';
+    }).join('')+
+    '</tbody></table></div>';
+}
+
 function renderKPIs(){
   var el=document.getElementById('kpis-content');
   if(!el)return;
 
-  var CAPITAL_INICIAL=124900;
+  var CAPITAL_INICIAL=115900;
   var lotes=ST.lotes;
   var totCompra=lotes.reduce(function(a,l){return a+l.compra;},0);
   var totVenta=lotes.reduce(function(a,l){return a+l.venta;},0);
@@ -2714,7 +2813,7 @@ function aplicarExcedente(tipo, monto){
 }
 
 function renderAll(){
-  renderCuadre();renderTransito();renderTacometro();renderGanGauges();renderMetaLara();renderCobranzas();renderGastos();renderKPIs();renderHero();renderResTabla();renderAlertas();renderResPC();
+  renderCuadre();renderTransito();renderTacometro();renderGanGauges();renderMetaLara();renderCobranzas();renderGastos();renderKPIs();renderControlHistorial();renderHero();renderResTabla();renderAlertas();renderResPC();
   renderLotesTbl();renderClientes();renderPorCobrar();renderFlujo();
   renderTrHistorial();renderCobrosHistorial();poblarSelects();
 }
@@ -2727,6 +2826,7 @@ renderCuadre();
 syncDesdeSupabase().catch(function(){ setModoIndicador(false); });
 document.getElementById('tr-fecha').value=hoy();
 var ncobFecha=document.getElementById('ncob-fecha');if(ncobFecha)ncobFecha.value=hoy();
+var ctrlFecha=document.getElementById('control-fecha');if(ctrlFecha)ctrlFecha.value=hoy();
 document.getElementById('n-fecha').value=hoy();
 renderAll();
 </script>
