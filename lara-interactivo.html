@@ -140,6 +140,7 @@ select option{background:var(--white)}
   <div class="nav-tab" onclick="showTab('gastos',this)">$ Gastos financieros</div>
   <div class="nav-tab" onclick="showTab('kpis',this)">★ Indicadores</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
+    <button onclick="sincronizarTodoSupabase()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--blue);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap;font-weight:600" title="Subir todo lo local a Supabase">⇧ Sincronizar todo</button>
     <button onclick="exportarDatos()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Exportar datos a JSON">↓ Exportar</button>
     <label style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink2);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap;margin:0" title="Importar datos desde JSON">↑ Importar<input type="file" id="import-file" accept=".json" style="display:none" onchange="importarDatos(this)"/></label>
     <button onclick="clearState()" style="padding:6px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--ink3);cursor:pointer;font-size:11px;font-family:var(--mono);white-space:nowrap" title="Resetear al estado original">⟳ Reset</button>
@@ -662,6 +663,23 @@ async function syncDesdeSupabase(){
       if(saldoDB) ST.saldoCobranzas = parseFloat(saldoDB.monto)||0;
     } catch(eCob){ console.warn('Cobranzas no disponibles en Supabase aun:', eCob.message); }
 
+    // Controles de caja
+    try {
+      var { data: controlesDB } = await supa.from('controles_caja').select('*').order('fecha');
+      if(controlesDB){
+        ST.controlesCaja = controlesDB.map(function(c){
+          var p=(c.fecha||'').split('-');
+          var fechaStr=p.length===3?p[2]+'/'+p[1]+'/'+p[0]:c.fecha;
+          return {
+            id: Number(c.id), fecha: fechaStr, cajaTotal: parseFloat(c.caja_total)||0,
+            cuentas: c.cuentas||{}, porCobrarLara: parseFloat(c.por_cobrar_lara)||0,
+            objetivo: parseFloat(c.objetivo)||0, diferencia: parseFloat(c.diferencia)||0,
+            cerraba: c.cerraba||false
+          };
+        });
+      }
+    } catch(eCtrl){ console.warn('Controles de caja no disponibles en Supabase aun:', eCtrl.message); }
+
     // Seq
     var maxId = Math.max.apply(null, ST.lotes.map(function(l){ return l.id; }));
     if(maxId > ST.seq) ST.seq = maxId;
@@ -678,6 +696,76 @@ async function syncDesdeSupabase(){
 }
 
 // ─── SAVE: guardar en Supabase ────────────────────────────────
+async function sincronizarTodoSupabase(){
+  if(!ONLINE_MODE){
+    alert('No hay conexión a Supabase. Esto solo funciona abriendo el dashboard desde lara-dashboard.vercel.app (no desde el archivo local).');
+    return;
+  }
+  if(!confirm('Esto va a subir TODO lo que tenés guardado en este navegador a Supabase (lotes, cobros, cobranzas, caja, control). Lo que ya existe se actualiza. ¿Continuar?'))return;
+
+  var errores=[];
+  var subidos={lotes:0,cobranzas:0,controles:0};
+
+  try {
+    // 1. LOTES (con sus cobros incluidos en el cobrado)
+    for(var i=0;i<ST.lotes.length;i++){
+      var l=ST.lotes[i];
+      try {
+        await saveToSupabase('lote_update', l);
+        subidos.lotes++;
+      } catch(e){ errores.push('Lote '+l.id+': '+e.message); }
+    }
+
+    // 2. COBRANZAS
+    if(ST.cobranzasHistorial){
+      for(var j=0;j<ST.cobranzasHistorial.length;j++){
+        var c=ST.cobranzasHistorial[j];
+        try {
+          // upsert manual: intentar insert, si existe update
+          await supa.from('cobranzas').upsert({
+            id: c.id, fecha: (function(){var p=(c.fecha||'').split('/');return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):(c.fecha||hoy());})(),
+            descripcion: c.descripcion||'', monto: c.monto, moneda: c.moneda||'usd', medio: c.medio||'caja',
+            lote_principal: c.lotePrincipal||null, aplicaciones: c.aplicaciones||[],
+            saldo_generado: c.saldoGenerado||0, anulada: c.anulada||false
+          }, { onConflict: 'id' });
+          subidos.cobranzas++;
+        } catch(e){ errores.push('Cobranza '+c.id+': '+e.message); }
+      }
+    }
+
+    // 3. SALDO COBRANZAS
+    try {
+      await supa.from('saldo_cobranzas').upsert({ id:1, monto: ST.saldoCobranzas||0 }, { onConflict:'id' });
+    } catch(e){ errores.push('Saldo cobranzas: '+e.message); }
+
+    // 4. CONTROLES DE CAJA
+    if(ST.controlesCaja){
+      for(var k=0;k<ST.controlesCaja.length;k++){
+        var ctrl=ST.controlesCaja[k];
+        try {
+          await saveToSupabase('control_caja', ctrl);
+          subidos.controles++;
+        } catch(e){ errores.push('Control '+ctrl.id+': '+e.message); }
+      }
+    }
+
+    var msg='Sincronización completa.\n\n';
+    msg+='Lotes: '+subidos.lotes+'\n';
+    msg+='Cobranzas: '+subidos.cobranzas+'\n';
+    msg+='Controles de caja: '+subidos.controles+'\n';
+    if(errores.length){
+      msg+='\n⚠ Algunos errores ('+errores.length+'):\n'+errores.slice(0,5).join('\n');
+      if(errores.length>5)msg+='\n...y '+(errores.length-5)+' más.';
+      msg+='\n\n(Puede que falten tablas en Supabase. Avisame si ves errores de tabla.)';
+    } else {
+      msg+='\nTodo subió correctamente. Ahora vas a ver lo mismo desde cualquier navegador.';
+    }
+    alert(msg);
+  } catch(eGeneral){
+    alert('Error general en la sincronización: '+eGeneral.message);
+  }
+}
+
 async function saveToSupabase(tipo, data){
   if(!ONLINE_MODE) return;
   try {
@@ -746,6 +834,17 @@ async function saveToSupabase(tipo, data){
     }
     else if(tipo === 'saldo_cobranzas'){
       await supa.from('saldo_cobranzas').update({ monto: data.monto }).eq('id', 1);
+    }
+    else if(tipo === 'control_caja'){
+      await supa.from('controles_caja').upsert({
+        id: data.id, fecha: (function(){var p=(data.fecha||'').split('/');return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):(data.fecha||hoy());})(),
+        caja_total: data.cajaTotal, cuentas: data.cuentas||{},
+        por_cobrar_lara: data.porCobrarLara, objetivo: data.objetivo,
+        diferencia: data.diferencia, cerraba: data.cerraba
+      }, { onConflict: 'id' });
+    }
+    else if(tipo === 'control_caja_delete'){
+      await supa.from('controles_caja').delete().eq('id', data.id);
     }
 
     var ind = document.getElementById('save-indicator');
